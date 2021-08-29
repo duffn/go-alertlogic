@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// Get your account details.
-	accountDetails, err := api.AccountDetails()
+	accountDetails, err := api.GetAccountDetails()
 	if err != nil {
 		log.Fatal(err)
 	}
