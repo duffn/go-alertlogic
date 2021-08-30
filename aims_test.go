@@ -13,6 +13,7 @@ const testRelatedAccountId = "98765432"
 var accountDetailsPath = fmt.Sprintf("/%s/%s/account", aimsServicePath, testAccountId)
 var authenticatePath = fmt.Sprintf("/%s/authenticate", aimsServicePath)
 var accountRelationshipPath = fmt.Sprintf("/%s/%s/accounts/%s/%s", aimsServicePath, testAccountId, Managed, testRelatedAccountId)
+var createUserPath = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
 
 func TestAims_Authenticate(t *testing.T) {
 	setup()
@@ -240,4 +241,100 @@ func TestAims_GetAccountRelationshipNotFound(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testNotFoundError)
+}
+
+func TestAims_CreateUser(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const response = `
+	{
+		"id": "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
+		"account_id": "12345678",
+		"name": "Bob Loblaw",
+		"username": "bob@bobloblawlaw.com",
+		"email": "bob@bobloblawlaw.com",
+		"active": true,
+		"locked": false,
+		"version": 1,
+		"linked_users": [],
+		"mobile_phone": "123-555-0123",
+		"created": {
+			"at": 1430185015,
+			"by": "System"
+		},
+		"modified": {
+			"at": 1430185015,
+			"by": "System"
+		}
+	}`
+
+	mux.HandleFunc(createUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, response)
+	})
+
+	want := CreateUserResponse{
+		ID:          "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
+		AccountID:   testAccountId,
+		Name:        "Bob Loblaw",
+		Email:       "bob@bobloblawlaw.com",
+		Username:    "bob@bobloblawlaw.com",
+		Active:      true,
+		Version:     1,
+		MobilePhone: "123-555-0123",
+		Locked:      false,
+		LinkedUsers: []LinkedUser{},
+		Created:     ModifiedCreated{At: 1430185015, By: "System"},
+		Modified:    ModifiedCreated{At: 1430185015, By: "System"},
+	}
+
+	user, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, user, want)
+	}
+
+	user, err = client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw", Password: "password"}, true)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, user, want)
+	}
+}
+
+func TestAims_CreateUserOneTimePasswordMissingPassword(t *testing.T) {
+	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, true)
+
+	assert.Error(t, err, "oneTimePassword must be accompanied by CreateUserRequest.Password")
+}
+
+func TestAims_CreateUserMakeRequestError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(createUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+}
+
+func TestAims_CreateUserUnmarshalError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(createUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
+	})
+
+	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
 }
