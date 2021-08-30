@@ -1,3 +1,5 @@
+// AIMS is the Alert Logic Access and Identity Management Service
+// https://console.cloudinsight.alertlogic.com/api/aims/
 package alertlogic
 
 import (
@@ -78,13 +80,42 @@ const (
 	Managing AccountRelationship = "managing"
 )
 
+// CreateUserRequest holds the user create request data.
+type CreateUserRequest struct {
+	Name              string `json:"name"`
+	Email             string `json:"email"`
+	Password          string `json:"password,omitempty"`
+	RoleId            string `json:"role_id,omitempty"`
+	Active            bool   `json:"active,omitempty"`
+	MobilePhone       string `json:"mobile_phone,omitempty"`
+	Phone             string `json:"phone,omitempty"`
+	WebhookUrl        string `json:"webhook_url,omitempty"`
+	NotificationsOnly bool   `json:"notifications_only,omitempty"`
+}
+
+// CreateUserResponse holds the user create response data.
+type CreateUserResponse struct {
+	ID          string          `json:"id,omitempty"`
+	AccountID   string          `json:"account_id,omitempty"`
+	Name        string          `json:"name,omitempty"`
+	Username    string          `json:"username,omitempty"`
+	Email       string          `json:"email,omitempty"`
+	Active      bool            `json:"active,omitempty"`
+	Locked      bool            `json:"locked,omitempty"`
+	Version     int64           `json:"version,omitempty"`
+	LinkedUsers []LinkedUser    `json:"linked_users,omitempty"`
+	MobilePhone string          `json:"mobile_phone,omitempty"`
+	Created     ModifiedCreated `json:"created,omitempty"`
+	Modified    ModifiedCreated `json:"modified,omitempty"`
+}
+
 // Authenticate authenticates a user and returns a token and user details. If you're using
 // this method directly, then returned token should be used as API.APIToken for all future
 // calls to the API.
 // Preferably, you should use `NewWithUsernameAndPassword` which will authenticate with the
 // API and set your token on API for future calls.
 func (api *API) Authenticate() (AuthenticateResponse, error) {
-	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/authenticate", aimsServicePath), nil, nil)
+	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/authenticate", aimsServicePath), nil, nil, nil)
 
 	if err != nil {
 		return AuthenticateResponse{}, errors.Wrap(err, errMakeRequestError)
@@ -101,7 +132,7 @@ func (api *API) Authenticate() (AuthenticateResponse, error) {
 
 // GetAccountDetails gets details of an account.
 func (api *API) GetAccountDetails() (AccountDetailsResponse, error) {
-	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/account", aimsServicePath, api.AccountID), nil, nil)
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/account", aimsServicePath, api.AccountID), nil, nil, nil)
 
 	if err != nil {
 		return AccountDetailsResponse{}, errors.Wrap(err, errMakeRequestError)
@@ -121,11 +152,42 @@ func (api *API) GetAccountDetails() (AccountDetailsResponse, error) {
 // This API returns 204 when these two accounts have an `accountRelationship` relationship and 404 when
 // they do not.
 func (api *API) GetAccountRelationship(relatedAccountId string, accountRelationship AccountRelationship) (int, error) {
-	_, statusCode, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/accounts/%s/%s", aimsServicePath, api.AccountID, accountRelationship, relatedAccountId), nil, nil)
+	_, statusCode, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/accounts/%s/%s", aimsServicePath, api.AccountID, accountRelationship, relatedAccountId), nil, nil, nil)
 
 	if err != nil {
 		return statusCode, errors.Wrap(err, errMakeRequestError)
 	}
 
 	return statusCode, nil
+}
+
+// CreateUser creates a new user.
+// If true, `oneTimePassword` will set the user's password as a one-time password and require them
+// to supply a new password upon first login.
+// If `Password` is not supplied in the `CreateUserRequest`, the user will be emailed a link to
+// set their password.
+// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-CreateUser
+func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (CreateUserResponse, error) {
+	if oneTimePassword && user.Password == "" {
+		return CreateUserResponse{}, errors.New("oneTimePassword must be accompanied by CreateUserRequest.Password")
+	}
+
+	var params map[string]string
+	if oneTimePassword {
+		params = map[string]string{"one_time_password": "true"}
+	}
+
+	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/users", aimsServicePath, api.AccountID), nil, params, user)
+
+	if err != nil {
+		return CreateUserResponse{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r CreateUserResponse
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return CreateUserResponse{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
 }

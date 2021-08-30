@@ -1,7 +1,10 @@
 package alertlogic
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -95,11 +98,27 @@ func (api *API) makeRequest(
 	path string,
 	headers http.Header,
 	params map[string]string,
+	body interface{},
 ) ([]byte, int, error) {
+	var jsonBody []byte
+	var err error
+
+	if body != nil {
+		jsonBody, err = json.Marshal(body)
+		if err != nil {
+			return nil, 0, errors.Wrap(err, "error marshalling body to JSON")
+		}
+	}
+
+	var requestBody io.Reader
+	if jsonBody != nil {
+		requestBody = bytes.NewReader(jsonBody)
+	}
+
 	req, err := http.NewRequest(
 		method,
 		fmt.Sprintf("%s/%s", api.BaseURL, path),
-		nil,
+		requestBody,
 	)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, errMakeRequestError)
