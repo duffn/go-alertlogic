@@ -10,10 +10,12 @@ import (
 
 const testRelatedAccountId = "98765432"
 
-var accountDetailsPath = fmt.Sprintf("/%s/%s/account", aimsServicePath, testAccountId)
-var authenticatePath = fmt.Sprintf("/%s/authenticate", aimsServicePath)
-var accountRelationshipPath = fmt.Sprintf("/%s/%s/accounts/%s/%s", aimsServicePath, testAccountId, Managed, testRelatedAccountId)
-var createUserPath = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
+var (
+	accountDetailsPath      = fmt.Sprintf("/%s/%s/account", aimsServicePath, testAccountId)
+	authenticatePath        = fmt.Sprintf("/%s/authenticate", aimsServicePath)
+	accountRelationshipPath = fmt.Sprintf("/%s/%s/accounts/%s/%s", aimsServicePath, testAccountId, Managed, testRelatedAccountId)
+	createUserPath          = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
+)
 
 func TestAims_Authenticate(t *testing.T) {
 	setup()
