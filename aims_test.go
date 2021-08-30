@@ -309,3 +309,32 @@ func TestAims_CreateUserOneTimePasswordMissingPassword(t *testing.T) {
 
 	assert.Error(t, err, "oneTimePassword must be accompanied by CreateUserRequest.Password")
 }
+
+func TestAims_CreateUserMakeRequestError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(createUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+}
+
+func TestAims_CreateUserUnmarshalError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(createUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
+	})
+
+	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
+}
