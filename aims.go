@@ -191,3 +191,14 @@ func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (Create
 
 	return r, nil
 }
+
+// DeleteUser deletes a user.
+func (api *API) DeleteUser(userId string) (int, error) {
+	_, statusCode, err := api.makeRequest("DELETE", fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), nil, nil, nil)
+
+	if err != nil {
+		return statusCode, errors.Wrap(err, errMakeRequestError)
+	}
+
+	return statusCode, nil
+}
