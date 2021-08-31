@@ -11,8 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// apiURL is the base URL for the API.
-const apiURL = "https://api.cloudinsight.alertlogic.com"
+const (
+	// apiURL is the base URL for the API.
+	apiURL = "https://api.cloudinsight.alertlogic.com"
+	// aimsServicePath is the path for the aims service.
+	aimsServicePath = "aims/v1"
+)
 
 // API holds the configuration for the current API client.
 type API struct {

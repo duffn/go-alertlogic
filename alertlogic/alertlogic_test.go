@@ -24,6 +24,13 @@ var (
 	testAccountId = "12345678"
 )
 
+const (
+	testRelatedAccountId = "98765432"
+	testUserId           = "715A4EC0-9833-4D6E-9C03-A537E3F98D23"
+	testEmail            = "bob@bobloblawlaw.com"
+	testUserFullName     = "Bob Loblaw"
+)
+
 func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
