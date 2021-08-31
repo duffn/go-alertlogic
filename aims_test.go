@@ -8,9 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testRelatedAccountId = "98765432"
-const testUserId = "715A4EC0-9833-4D6E-9C03-A537E3F98D23"
-const testEmail = "bob@bobloblawlaw.com"
+const (
+	testRelatedAccountId = "98765432"
+	testUserId           = "715A4EC0-9833-4D6E-9C03-A537E3F98D23"
+	testEmail            = "bob@bobloblawlaw.com"
+	testUserFullName     = "Bob Loblaw"
+)
 
 var (
 	accountDetailsPath      = fmt.Sprintf("/%s/%s/account", aimsServicePath, testAccountId)
@@ -32,7 +35,7 @@ func TestAims_Authenticate(t *testing.T) {
 				"id": "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
 				"account_id": "12345678",
 				"name": "Bob Loblaw",
-				"email": "bob@loblawlaw.com",
+				"email": "bob@bobloblawlaw.com",
 				"active": true,
 				"locked": false,
 				"version": 1,
@@ -80,8 +83,8 @@ func TestAims_Authenticate(t *testing.T) {
 			User: User{
 				ID:        "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
 				AccountID: testAccountId,
-				Name:      "Bob Loblaw",
-				Email:     "bob@loblawlaw.com",
+				Name:      testUserFullName,
+				Email:     testEmail,
 				Active:    true,
 				Locked:    false,
 				Version:   1,
@@ -283,11 +286,11 @@ func TestAims_CreateUser(t *testing.T) {
 	})
 
 	want := CreateUserResponse{
-		ID:          "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
+		ID:          testUserId,
 		AccountID:   testAccountId,
-		Name:        "Bob Loblaw",
-		Email:       "bob@bobloblawlaw.com",
-		Username:    "bob@bobloblawlaw.com",
+		Name:        testUserFullName,
+		Email:       testEmail,
+		Username:    testEmail,
 		Active:      true,
 		Version:     1,
 		MobilePhone: "123-555-0123",
@@ -297,13 +300,13 @@ func TestAims_CreateUser(t *testing.T) {
 		Modified:    ModifiedCreated{At: 1430185015, By: "System"},
 	}
 
-	user, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+	user, err := client.CreateUser(CreateUserRequest{Email: testEmail, Name: testUserFullName}, false)
 
 	if assert.NoError(t, err) {
 		assert.Equal(t, user, want)
 	}
 
-	user, err = client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw", Password: "password"}, true)
+	user, err = client.CreateUser(CreateUserRequest{Email: testEmail, Name: testUserFullName, Password: "password"}, true)
 
 	if assert.NoError(t, err) {
 		assert.Equal(t, user, want)
@@ -311,7 +314,7 @@ func TestAims_CreateUser(t *testing.T) {
 }
 
 func TestAims_CreateUserOneTimePasswordMissingPassword(t *testing.T) {
-	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, true)
+	_, err := client.CreateUser(CreateUserRequest{Email: testEmail, Name: testUserFullName}, true)
 
 	assert.Error(t, err, "oneTimePassword must be accompanied by CreateUserRequest.Password")
 }
@@ -325,7 +328,7 @@ func TestAims_CreateUserMakeRequestError(t *testing.T) {
 		w.WriteHeader(http.StatusUnauthorized)
 	})
 
-	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+	_, err := client.CreateUser(CreateUserRequest{Email: testEmail, Name: "Bob Loblaw"}, false)
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
 }
@@ -339,7 +342,7 @@ func TestAims_CreateUserUnmarshalError(t *testing.T) {
 		fmt.Fprintf(w, "not json")
 	})
 
-	_, err := client.CreateUser(CreateUserRequest{Email: "bob@bobloblawlaw.com", Name: "Bob Loblaw"}, false)
+	_, err := client.CreateUser(CreateUserRequest{Email: testEmail, Name: testUserFullName}, false)
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)
@@ -422,7 +425,7 @@ func TestAims_ListUsersByEmail(t *testing.T) {
 				User: User{
 					ID:          testUserId,
 					AccountID:   testAccountId,
-					Name:        "Bob Loblaw",
+					Name:        testUserFullName,
 					Email:       testEmail,
 					Username:    testEmail,
 					Active:      true,
