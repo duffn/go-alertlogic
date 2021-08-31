@@ -9,7 +9,7 @@ This is in _very early_ development and only supports a few of the [myriad of en
 ## Installation
 
 ```bash
-go get github.com/duffn/go-alertlogic
+go get github.com/duffn/go-alertlogic/alertlogic
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/duffn/go-alertlogic"
+	"github.com/duffn/go-alertlogic/alertlogic"
 )
 
 func main() {
