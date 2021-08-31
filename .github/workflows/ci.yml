@@ -38,7 +38,7 @@ jobs:
       - name: Vet
         run: go vet ./...
       - name: Test
-        run: go test -race -coverprofile=c.out -covermode=atomic
+        run: go test ./... -race -coverprofile=c.out -covermode=atomic
       - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
