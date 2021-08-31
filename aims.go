@@ -193,6 +193,8 @@ func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (Create
 }
 
 // DeleteUser deletes a user.
+// Note that this endpoint returns a 204 status code even if the user ID does not exist and only
+// returns a 400 error if you try to delete the account associated with your API token.
 func (api *API) DeleteUser(userId string) (int, error) {
 	_, statusCode, err := api.makeRequest("DELETE", fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), nil, nil, nil)
 
