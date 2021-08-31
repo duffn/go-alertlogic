@@ -3,6 +3,7 @@ package alertlogic
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/pkg/errors"
 )
@@ -107,6 +108,18 @@ type CreateUserResponse struct {
 	Modified    ModifiedCreated `json:"modified,omitempty"`
 }
 
+// ListUsersUser is a user for the ListUsers endpoints. This is a standard User
+// with MfaEnabled added.
+type ListUsersUser struct {
+	MfaEnabled bool `json:"mfa_enabled,omitempty"`
+	User
+}
+
+// ListUsersByEmailResponse holds the response from list users by email.
+type ListUsersByEmailResponse struct {
+	Users []ListUsersUser `json:"users"`
+}
+
 // Authenticate authenticates a user and returns a token and user details. If you're using
 // this method directly, then returned token should be used as API.APIToken for all future
 // calls to the API.
@@ -202,4 +215,22 @@ func (api *API) DeleteUser(userId string) (int, error) {
 	}
 
 	return statusCode, nil
+}
+
+// ListUsersByEmailResponse retrieves users by email address.
+// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
+func (api *API) ListUsersByEmail(email string) (ListUsersByEmailResponse, error) {
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), nil, nil, nil)
+
+	if err != nil {
+		return ListUsersByEmailResponse{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r ListUsersByEmailResponse
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return ListUsersByEmailResponse{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
 }
