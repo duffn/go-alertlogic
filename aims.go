@@ -1,5 +1,3 @@
-// AIMS is the Alert Logic Access and Identity Management Service
-// https://console.cloudinsight.alertlogic.com/api/aims/
 package alertlogic
 
 import (
@@ -190,4 +188,18 @@ func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (Create
 	}
 
 	return r, nil
+}
+
+// DeleteUser deletes a user.
+// Note that this endpoint returns a 204 status code even if the user ID does not exist and only
+// returns a 400 error if you try to delete the account associated with your API token.
+// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-DeleteUser
+func (api *API) DeleteUser(userId string) (int, error) {
+	_, statusCode, err := api.makeRequest("DELETE", fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), nil, nil, nil)
+
+	if err != nil {
+		return statusCode, errors.Wrap(err, errMakeRequestError)
+	}
+
+	return statusCode, nil
 }

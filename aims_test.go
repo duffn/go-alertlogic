@@ -9,11 +9,15 @@ import (
 )
 
 const testRelatedAccountId = "98765432"
+const testUserId = "715A4EC0-9833-4D6E-9C03-A537E3F98D23"
 
-var accountDetailsPath = fmt.Sprintf("/%s/%s/account", aimsServicePath, testAccountId)
-var authenticatePath = fmt.Sprintf("/%s/authenticate", aimsServicePath)
-var accountRelationshipPath = fmt.Sprintf("/%s/%s/accounts/%s/%s", aimsServicePath, testAccountId, Managed, testRelatedAccountId)
-var createUserPath = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
+var (
+	accountDetailsPath      = fmt.Sprintf("/%s/%s/account", aimsServicePath, testAccountId)
+	authenticatePath        = fmt.Sprintf("/%s/authenticate", aimsServicePath)
+	accountRelationshipPath = fmt.Sprintf("/%s/%s/accounts/%s/%s", aimsServicePath, testAccountId, Managed, testRelatedAccountId)
+	createUserPath          = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
+	deleteUserPath          = fmt.Sprintf("/%s/%s/users/%s", aimsServicePath, testAccountId, testUserId)
+)
 
 func TestAims_Authenticate(t *testing.T) {
 	setup()
@@ -337,4 +341,40 @@ func TestAims_CreateUserUnmarshalError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)
+}
+
+func TestAims_DeleteUser(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(deleteUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "DELETE", r.Method, "Expected method 'DELETE', got %s", r.Method)
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	deleteUserResponse, err := client.DeleteUser(testUserId)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, deleteUserResponse, http.StatusNoContent)
+	}
+}
+
+func TestAims_DeleteUserError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	errorResponse := `{"error":"self_delete_error"}`
+
+	mux.HandleFunc(deleteUserPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "DELETE", r.Method, "Expected method 'DELETE', got %s", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, errorResponse)
+	})
+
+	respCode, err := client.DeleteUser(testUserId)
+
+	assert.Error(t, err)
+	assert.Equal(t, respCode, http.StatusBadRequest)
+	assert.Equal(t, err.Error(), fmt.Sprintf("error from makeRequest: %s", errorResponse))
 }
