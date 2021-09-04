@@ -169,7 +169,6 @@ func (api *API) DeleteUser(userId string) (int, error) {
 }
 
 // ListUsersByEmail retrieves users by email address.
-// Access keys and user credentials are included by this endpoint via the API by default.
 // You can include access keys, credentials, or role IDs with includeAccessKeys,
 // includeUserCredentials, and includeRoleIds respectively.
 //
@@ -179,7 +178,6 @@ func (api *API) ListUsersByEmail(email string, includeAccessKeys bool, includeUs
 }
 
 // GetUserDetailsById retrieves a user's details by their ID.
-// Access keys and user credentials are included by this endpoint via the API by default.
 // You can include access keys, credentials, or role IDs with includeAccessKeys,
 // includeUserCredentials, and includeRoleIds respectively.
 //
@@ -188,8 +186,16 @@ func (api *API) GetUserDetailsById(userId string, includeAccessKeys bool, includ
 	return api.getUser(fmt.Sprintf("%s/user/%s", aimsServicePath, userId), includeAccessKeys, includeUserCredentials, includeRoleIds)
 }
 
+// GetUserDetails retrieves a user's details by their ID.
+// You can include access keys, credentials, or role IDs with includeAccessKeys,
+// includeUserCredentials, and includeRoleIds respectively.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetails
+func (api *API) GetUserDetails(userId string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
+	return api.getUser(fmt.Sprintf("%s/%s/user/%s", aimsServicePath, api.AccountID, userId), includeAccessKeys, includeUserCredentials, includeRoleIds)
+}
+
 // ListUsersByEmail retrieves users by email address.
-// Access keys and user credentials are included by this endpoint via the API by default.
 // You can include access keys, credentials, or role IDs with includeAccessKeys,
 // includeUserCredentials, and includeRoleIds respectively.
 // Specifying roleId will only return users that belong to that role.
@@ -232,7 +238,6 @@ func (api *API) UpdateUserDetails(userId string, user UpdateUserRequest, oneTime
 }
 
 // GetUserDetailsByUsername retrieves a user's details by their username.
-// Access keys and user credentials are included by this endpoint via the API by default.
 // You can include access keys, credentials, or role IDs with includeAccessKeys,
 // includeUserCredentials, and includeRoleIds respectively.
 //
