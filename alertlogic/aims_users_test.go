@@ -380,6 +380,110 @@ func TestAims_GetUserDetailsById(t *testing.T) {
 		"version": 1,
 		"linked_users": [],
 		"mobile_phone": "123-555-0123",
+		"role_ids": ["2A33175D-86EF-44B5-AA39-C9549F6306DF"],
+		"user_credential": {
+			"version": 2,
+			"one_time_password": false,
+			"last_login": 1548880711,
+			"created": {
+				"at": 1430185015,
+				"by": "System"
+			},
+			"modified": {
+				"at": 1430185015,
+				"by": "System"
+			}
+		},
+		"access_keys": [{
+			"label": "api access",
+			"last_login": 0,
+			"created": {
+				"at": 1525410880,
+				"by": "System"
+			},
+			"modified": {
+				"at": 1525410880,
+				"by": "System"
+			},
+			"access_key_id": "61fb235617960503"
+		}],
+		"created": {
+			"at": 1430185015,
+			"by": "System"
+		},
+		"modified": {
+			"at": 1430185015,
+			"by": "System"
+		}
+	}`
+
+	mux.HandleFunc(getUserDetailsByIdPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, response)
+	})
+
+	var mobilePhone string = "123-555-0123"
+	var userCredential UserCredential = UserCredential{
+		Version:         2,
+		OneTimePassword: false,
+		LastLogin:       1548880711,
+		Created:         ModifiedCreated{At: 1430185015, By: "System"},
+		Modified:        ModifiedCreated{At: 1430185015, By: "System"},
+	}
+	var accessKeys []AccessKey = []AccessKey{
+		{
+			Label:       "api access",
+			LastLogin:   0,
+			Created:     ModifiedCreated{At: 1525410880, By: "System"},
+			Modified:    ModifiedCreated{At: 1525410880, By: "System"},
+			AccessKeyID: "61fb235617960503",
+		},
+	}
+
+	want := User{
+		ID:             testUserId,
+		AccountID:      testAccountId,
+		Name:           testUserFullName,
+		Email:          testEmail,
+		Username:       testEmail,
+		Active:         true,
+		Version:        1,
+		MfaEnabled:     nil,
+		MobilePhone:    &mobilePhone,
+		Locked:         false,
+		LinkedUsers:    []LinkedUser{},
+		Created:        ModifiedCreated{At: 1430185015, By: "System"},
+		Modified:       ModifiedCreated{At: 1430185015, By: "System"},
+		UserCredential: &userCredential,
+		AccessKeys:     &accessKeys,
+		RoleIds:        &[]string{"2A33175D-86EF-44B5-AA39-C9549F6306DF"},
+	}
+
+	user, err := client.GetUserDetailsById(testUserId, true, true, true)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, user, want)
+	}
+}
+
+func TestAims_GetUserDetailsByIdWithNoParams(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const response = `
+	{
+		"id": "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
+		"account_id": "12345678",
+		"name": "Bob Loblaw",
+		"username": "bob@bobloblawlaw.com",
+		"email": "bob@bobloblawlaw.com",
+		"active": true,
+		"locked": false,
+		"version": 1,
+		"linked_users": [],
+		"mobile_phone": "123-555-0123",
 		"created": {
 			"at": 1430185015,
 			"by": "System"
@@ -415,7 +519,7 @@ func TestAims_GetUserDetailsById(t *testing.T) {
 		Modified:    ModifiedCreated{At: 1430185015, By: "System"},
 	}
 
-	user, err := client.GetUserDetailsById(testUserId)
+	user, err := client.GetUserDetailsById(testUserId, false, false, false)
 
 	if assert.NoError(t, err) {
 		assert.Equal(t, user, want)
@@ -431,7 +535,7 @@ func TestAims_GetUserDetailsByIdMakeRequestError(t *testing.T) {
 		w.WriteHeader(http.StatusUnauthorized)
 	})
 
-	_, err := client.GetUserDetailsById(testUserId)
+	_, err := client.GetUserDetailsById(testUserId, true, true, true)
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
@@ -446,7 +550,7 @@ func TestAims_GetUserDetailsByIdUnmarshalError(t *testing.T) {
 		fmt.Fprintf(w, "not json")
 	})
 
-	_, err := client.GetUserDetailsById(testUserId)
+	_, err := client.GetUserDetailsById(testUserId, true, true, true)
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)
