@@ -21,7 +21,7 @@ type Authentication struct {
 	TokenExpiration int64   `json:"token_expiration"`
 }
 
-// Account is the account level information.
+// Account is the account level information for a user.
 type Account struct {
 	ID                  string          `json:"id,omitempty"`
 	Name                string          `json:"name,omitempty"`
@@ -44,6 +44,8 @@ type User struct {
 	Active      bool            `json:"active,omitempty"`
 	Locked      bool            `json:"locked,omitempty"`
 	Version     int64           `json:"version,omitempty"`
+	MfaEnabled  *bool           `json:"mfa_enabled,omitempty"`
+	MobilePhone *string         `json:"mobile_phone,omitempty"`
 	LinkedUsers []LinkedUser    `json:"linked_users,omitempty"`
 	Created     ModifiedCreated `json:"created,omitempty"`
 	Modified    ModifiedCreated `json:"modified,omitempty"`
@@ -68,32 +70,9 @@ type CreateUserRequest struct {
 	NotificationsOnly bool   `json:"notifications_only,omitempty"`
 }
 
-// CreateUserResponse holds the user create response data.
-type CreateUserResponse struct {
-	ID          string          `json:"id,omitempty"`
-	AccountID   string          `json:"account_id,omitempty"`
-	Name        string          `json:"name,omitempty"`
-	Username    string          `json:"username,omitempty"`
-	Email       string          `json:"email,omitempty"`
-	Active      bool            `json:"active,omitempty"`
-	Locked      bool            `json:"locked,omitempty"`
-	Version     int64           `json:"version,omitempty"`
-	LinkedUsers []LinkedUser    `json:"linked_users,omitempty"`
-	MobilePhone string          `json:"mobile_phone,omitempty"`
-	Created     ModifiedCreated `json:"created,omitempty"`
-	Modified    ModifiedCreated `json:"modified,omitempty"`
-}
-
-// ListUsersUser is a user for the ListUsers endpoints. This is a standard User
-// with MfaEnabled added.
-type ListUsersUser struct {
-	MfaEnabled bool `json:"mfa_enabled,omitempty"`
-	User
-}
-
 // ListUsersByEmailResponse holds the response from list users by email.
-type ListUsersByEmailResponse struct {
-	Users []ListUsersUser `json:"users"`
+type UserList struct {
+	Users []User `json:"users"`
 }
 
 // Authenticate authenticates a user and returns a token and user details. If you're using
@@ -101,6 +80,8 @@ type ListUsersByEmailResponse struct {
 // calls to the API.
 // Preferably, you should use `NewWithUsernameAndPassword` which will authenticate with the
 // API and set your token on API for future calls.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Authentication_and_Authorization_Resources-Authenticate
 func (api *API) Authenticate() (AuthenticateResponse, error) {
 	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/authenticate", aimsServicePath), nil, nil, nil)
 
@@ -122,10 +103,11 @@ func (api *API) Authenticate() (AuthenticateResponse, error) {
 // to supply a new password upon first login.
 // If `Password` is not supplied in the `CreateUserRequest`, the user will be emailed a link to
 // set their password.
-// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-CreateUser
-func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (CreateUserResponse, error) {
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-CreateUser
+func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (User, error) {
 	if oneTimePassword && user.Password == "" {
-		return CreateUserResponse{}, errors.New("oneTimePassword must be accompanied by CreateUserRequest.Password")
+		return User{}, errors.New("oneTimePassword must be accompanied by CreateUserRequest.Password")
 	}
 
 	var params map[string]string
@@ -136,13 +118,13 @@ func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (Create
 	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/users", aimsServicePath, api.AccountID), nil, params, user)
 
 	if err != nil {
-		return CreateUserResponse{}, errors.Wrap(err, errMakeRequestError)
+		return User{}, errors.Wrap(err, errMakeRequestError)
 	}
 
-	var r CreateUserResponse
+	var r User
 	err = json.Unmarshal(res, &r)
 	if err != nil {
-		return CreateUserResponse{}, errors.Wrap(err, errUnmarshalError)
+		return User{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
@@ -151,7 +133,8 @@ func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (Create
 // DeleteUser deletes a user.
 // Note that this endpoint returns a 204 status code even if the user ID does not exist and only
 // returns a 400 error if you try to delete the account associated with your API token.
-// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-DeleteUser
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-DeleteUser
 func (api *API) DeleteUser(userId string) (int, error) {
 	_, statusCode, err := api.makeRequest("DELETE", fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), nil, nil, nil)
 
@@ -162,19 +145,20 @@ func (api *API) DeleteUser(userId string) (int, error) {
 	return statusCode, nil
 }
 
-// ListUsersByEmailResponse retrieves users by email address.
-// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
-func (api *API) ListUsersByEmail(email string) (ListUsersByEmailResponse, error) {
+// ListUsersByEmail retrieves users by email address.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
+func (api *API) ListUsersByEmail(email string) (UserList, error) {
 	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), nil, nil, nil)
 
 	if err != nil {
-		return ListUsersByEmailResponse{}, errors.Wrap(err, errMakeRequestError)
+		return UserList{}, errors.Wrap(err, errMakeRequestError)
 	}
 
-	var r ListUsersByEmailResponse
+	var r UserList
 	err = json.Unmarshal(res, &r)
 	if err != nil {
-		return ListUsersByEmailResponse{}, errors.Wrap(err, errUnmarshalError)
+		return UserList{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
