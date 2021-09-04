@@ -166,10 +166,29 @@ func (api *API) DeleteUser(userId string) (int, error) {
 }
 
 // ListUsersByEmail retrieves users by email address.
+// Access keys and user credentials are included by this endpoint via the API by default.
+// You can include access keys, credentials, or role IDs with includeAccessKeys,
+// includeUserCredentials, and includeRoleIds respectively.
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
-func (api *API) ListUsersByEmail(email string) (UserList, error) {
-	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), nil, nil, nil)
+func (api *API) ListUsersByEmail(email string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (UserList, error) {
+	var params = map[string]string{
+		"include_access_keys":     "false",
+		"include_user_credential": "false",
+		"include_role_ids":        "false",
+	}
+
+	if includeAccessKeys {
+		params["include_access_keys"] = "true"
+	}
+	if includeUserCredentials {
+		params["include_user_credential"] = "true"
+	}
+	if includeRoleIds {
+		params["include_role_ids"] = "true"
+	}
+
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), nil, params, nil)
 
 	if err != nil {
 		return UserList{}, errors.Wrap(err, errMakeRequestError)
