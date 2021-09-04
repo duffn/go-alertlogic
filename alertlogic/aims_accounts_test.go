@@ -42,7 +42,7 @@ func TestAims_GetAccountDetails(t *testing.T) {
 		fmt.Fprint(w, response)
 	})
 
-	want := AccountDetailsResponse{
+	want := AccountDetails{
 		ID:                  "12345678",
 		Name:                "Company Name",
 		Active:              true,
