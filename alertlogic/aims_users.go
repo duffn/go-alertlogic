@@ -175,35 +175,7 @@ func (api *API) DeleteUser(userId string) (int, error) {
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
 func (api *API) ListUsersByEmail(email string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (UserList, error) {
-	var params = map[string]string{
-		"include_access_keys":     "false",
-		"include_user_credential": "false",
-		"include_role_ids":        "false",
-	}
-
-	if includeAccessKeys {
-		params["include_access_keys"] = "true"
-	}
-	if includeUserCredentials {
-		params["include_user_credential"] = "true"
-	}
-	if includeRoleIds {
-		params["include_role_ids"] = "true"
-	}
-
-	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), nil, params, nil)
-
-	if err != nil {
-		return UserList{}, errors.Wrap(err, errMakeRequestError)
-	}
-
-	var r UserList
-	err = json.Unmarshal(res, &r)
-	if err != nil {
-		return UserList{}, errors.Wrap(err, errUnmarshalError)
-	}
-
-	return r, nil
+	return api.getUsers(fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), includeAccessKeys, includeUserCredentials, includeRoleIds, "")
 }
 
 // GetUserDetailsById retrieves a user's details by their ID.
@@ -213,35 +185,7 @@ func (api *API) ListUsersByEmail(email string, includeAccessKeys bool, includeUs
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetailsByUserId
 func (api *API) GetUserDetailsById(userId string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
-	var params = map[string]string{
-		"include_access_keys":     "false",
-		"include_user_credential": "false",
-		"include_role_ids":        "false",
-	}
-
-	if includeAccessKeys {
-		params["include_access_keys"] = "true"
-	}
-	if includeUserCredentials {
-		params["include_user_credential"] = "true"
-	}
-	if includeRoleIds {
-		params["include_role_ids"] = "true"
-	}
-
-	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/user/%s", aimsServicePath, userId), nil, params, nil)
-
-	if err != nil {
-		return User{}, errors.Wrap(err, errMakeRequestError)
-	}
-
-	var r User
-	err = json.Unmarshal(res, &r)
-	if err != nil {
-		return User{}, errors.Wrap(err, errUnmarshalError)
-	}
-
-	return r, nil
+	return api.getUser(fmt.Sprintf("%s/user/%s", aimsServicePath, userId), includeAccessKeys, includeUserCredentials, includeRoleIds)
 }
 
 // ListUsersByEmail retrieves users by email address.
@@ -252,38 +196,7 @@ func (api *API) GetUserDetailsById(userId string, includeAccessKeys bool, includ
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsers
 func (api *API) ListUsers(includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool, roleId string) (UserList, error) {
-	var params = map[string]string{
-		"include_access_keys":     "false",
-		"include_user_credential": "false",
-		"include_role_ids":        "false",
-	}
-
-	if includeAccessKeys {
-		params["include_access_keys"] = "true"
-	}
-	if includeUserCredentials {
-		params["include_user_credential"] = "true"
-	}
-	if includeRoleIds {
-		params["include_role_ids"] = "true"
-	}
-	if roleId != "" {
-		params["role_id"] = roleId
-	}
-
-	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/users", aimsServicePath, api.AccountID), nil, params, nil)
-
-	if err != nil {
-		return UserList{}, errors.Wrap(err, errMakeRequestError)
-	}
-
-	var r UserList
-	err = json.Unmarshal(res, &r)
-	if err != nil {
-		return UserList{}, errors.Wrap(err, errUnmarshalError)
-	}
-
-	return r, nil
+	return api.getUsers(fmt.Sprintf("%s/%s/users", aimsServicePath, api.AccountID), includeAccessKeys, includeUserCredentials, includeRoleIds, roleId)
 }
 
 // UpdateUserDetails updates a user.
@@ -325,6 +238,11 @@ func (api *API) UpdateUserDetails(userId string, user UpdateUserRequest, oneTime
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetailsByUserId
 func (api *API) GetUserDetailsByUsername(username string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
+	return api.getUser(fmt.Sprintf("%s/user/username/%s", aimsServicePath, username), includeAccessKeys, includeUserCredentials, includeRoleIds)
+}
+
+// getUser holds shared logic for retrieving a User from the API.
+func (api *API) getUser(path string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
 	var params = map[string]string{
 		"include_access_keys":     "false",
 		"include_user_credential": "false",
@@ -341,8 +259,7 @@ func (api *API) GetUserDetailsByUsername(username string, includeAccessKeys bool
 		params["include_role_ids"] = "true"
 	}
 
-	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/user/username/%s", aimsServicePath, username), nil, params, nil)
-
+	res, _, err := api.makeRequest("GET", path, nil, params, nil)
 	if err != nil {
 		return User{}, errors.Wrap(err, errMakeRequestError)
 	}
@@ -351,6 +268,41 @@ func (api *API) GetUserDetailsByUsername(username string, includeAccessKeys bool
 	err = json.Unmarshal(res, &r)
 	if err != nil {
 		return User{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// getUsers holds shared logic for retrieving multiple Users from the API.
+func (api *API) getUsers(path string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool, roleId string) (UserList, error) {
+	var params = map[string]string{
+		"include_access_keys":     "false",
+		"include_user_credential": "false",
+		"include_role_ids":        "false",
+	}
+
+	if includeAccessKeys {
+		params["include_access_keys"] = "true"
+	}
+	if includeUserCredentials {
+		params["include_user_credential"] = "true"
+	}
+	if includeRoleIds {
+		params["include_role_ids"] = "true"
+	}
+	if roleId != "" {
+		params["role_id"] = roleId
+	}
+
+	res, _, err := api.makeRequest("GET", path, nil, params, nil)
+	if err != nil {
+		return UserList{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r UserList
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return UserList{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
