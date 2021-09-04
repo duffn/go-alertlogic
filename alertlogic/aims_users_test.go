@@ -17,7 +17,7 @@ var (
 	listUsersPath                = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
 	updateUserPath               = fmt.Sprintf("/%s/%s/users/%s", aimsServicePath, testAccountId, testUserId)
 	getUserDetailsByUsernamePath = fmt.Sprintf("/%s/user/username/%s", aimsServicePath, testUserId)
-	getUserDetailsPath           = fmt.Sprintf("/%s/%s/user/%s", aimsServicePath, testAccountId, testUserId)
+	getUserDetailsPath           = fmt.Sprintf("/%s/%s/users/%s", aimsServicePath, testAccountId, testUserId)
 )
 
 func TestAims_Authenticate(t *testing.T) {

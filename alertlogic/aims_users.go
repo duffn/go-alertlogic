@@ -192,7 +192,7 @@ func (api *API) GetUserDetailsById(userId string, includeAccessKeys bool, includ
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetails
 func (api *API) GetUserDetails(userId string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
-	return api.getUser(fmt.Sprintf("%s/%s/user/%s", aimsServicePath, api.AccountID, userId), includeAccessKeys, includeUserCredentials, includeRoleIds)
+	return api.getUser(fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), includeAccessKeys, includeUserCredentials, includeRoleIds)
 }
 
 // ListUsersByEmail retrieves users by email address.
