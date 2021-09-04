@@ -870,7 +870,7 @@ func TestAims_UpdateUser(t *testing.T) {
 }
 
 func TestAims_UpdateUserOneTimePasswordMissingPassword(t *testing.T) {
-	_, err := client.UpdateUserDetails(testUserId, UpdateUserRequest{Email: "new@email.com", Password: "password"}, true)
+	_, err := client.UpdateUserDetails(testUserId, UpdateUserRequest{Email: "new@email.com"}, true)
 
 	assert.Error(t, err, "oneTimePassword must be accompanied by UpdateUserRequest.Password")
 }
