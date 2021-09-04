@@ -8,7 +8,7 @@ import (
 )
 
 // AccountDetailsResponse represents account details.
-type AccountDetailsResponse struct {
+type AccountDetails struct {
 	ID                  string          `json:"id,omitempty"`
 	Name                string          `json:"name,omitempty"`
 	Active              bool            `json:"active,omitempty"`
@@ -29,17 +29,19 @@ const (
 )
 
 // GetAccountDetails gets details of an account.
-func (api *API) GetAccountDetails() (AccountDetailsResponse, error) {
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Account_Resources-GetAccountDetails
+func (api *API) GetAccountDetails() (AccountDetails, error) {
 	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/account", aimsServicePath, api.AccountID), nil, nil, nil)
 
 	if err != nil {
-		return AccountDetailsResponse{}, errors.Wrap(err, errMakeRequestError)
+		return AccountDetails{}, errors.Wrap(err, errMakeRequestError)
 	}
 
-	var r AccountDetailsResponse
+	var r AccountDetails
 	err = json.Unmarshal(res, &r)
 	if err != nil {
-		return AccountDetailsResponse{}, errors.Wrap(err, errUnmarshalError)
+		return AccountDetails{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
@@ -49,6 +51,8 @@ func (api *API) GetAccountDetails() (AccountDetailsResponse, error) {
 // when the API client is created, is the primary account, and `relatedAccountId` is the secondary account.
 // This API returns 204 when these two accounts have an `accountRelationship` relationship and 404 when
 // they do not.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Account_Resources-AccountRelationshipExists
 func (api *API) GetAccountRelationship(relatedAccountId string, accountRelationship AccountRelationship) (int, error) {
 	_, statusCode, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/accounts/%s/%s", aimsServicePath, api.AccountID, accountRelationship, relatedAccountId), nil, nil, nil)
 
