@@ -90,6 +90,9 @@ type CreateUserRequest struct {
 	NotificationsOnly bool   `json:"notifications_only,omitempty"`
 }
 
+// UpdateUserRequest holds the user update request data.
+type UpdateUserRequest = CreateUserRequest
+
 // ListUsersByEmailResponse holds the response from list users by email.
 type UserList struct {
 	Users []User `json:"users"`
@@ -278,6 +281,38 @@ func (api *API) ListUsers(includeAccessKeys bool, includeUserCredentials bool, i
 	err = json.Unmarshal(res, &r)
 	if err != nil {
 		return UserList{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// UpdateUserDetails updates a user.
+// If true, `oneTimePassword` will set the user's password as a one-time password and require them
+// to supply a new password upon first login.
+// If `Password` is not supplied in the `UpdateUserRequest`, the user will be emailed a link to
+// set their password.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-UpdateUser
+func (api *API) UpdateUserDetails(userId string, user UpdateUserRequest, oneTimePassword bool) (User, error) {
+	if oneTimePassword && user.Password == "" {
+		return User{}, errors.New("oneTimePassword must be accompanied by CreateUserRequest.Password")
+	}
+
+	var params map[string]string
+	if oneTimePassword {
+		params = map[string]string{"one_time_password": "true"}
+	}
+
+	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), nil, params, user)
+
+	if err != nil {
+		return User{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r User
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return User{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
