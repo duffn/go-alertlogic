@@ -80,6 +80,8 @@ type UserList struct {
 // calls to the API.
 // Preferably, you should use `NewWithUsernameAndPassword` which will authenticate with the
 // API and set your token on API for future calls.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Authentication_and_Authorization_Resources-Authenticate
 func (api *API) Authenticate() (AuthenticateResponse, error) {
 	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/authenticate", aimsServicePath), nil, nil, nil)
 
@@ -101,7 +103,8 @@ func (api *API) Authenticate() (AuthenticateResponse, error) {
 // to supply a new password upon first login.
 // If `Password` is not supplied in the `CreateUserRequest`, the user will be emailed a link to
 // set their password.
-// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-CreateUser
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-CreateUser
 func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (User, error) {
 	if oneTimePassword && user.Password == "" {
 		return User{}, errors.New("oneTimePassword must be accompanied by CreateUserRequest.Password")
@@ -130,7 +133,8 @@ func (api *API) CreateUser(user CreateUserRequest, oneTimePassword bool) (User, 
 // DeleteUser deletes a user.
 // Note that this endpoint returns a 204 status code even if the user ID does not exist and only
 // returns a 400 error if you try to delete the account associated with your API token.
-// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-DeleteUser
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-DeleteUser
 func (api *API) DeleteUser(userId string) (int, error) {
 	_, statusCode, err := api.makeRequest("DELETE", fmt.Sprintf("%s/%s/users/%s", aimsServicePath, api.AccountID, userId), nil, nil, nil)
 
@@ -142,7 +146,8 @@ func (api *API) DeleteUser(userId string) (int, error) {
 }
 
 // ListUsersByEmail retrieves users by email address.
-// https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsersByEmail
 func (api *API) ListUsersByEmail(email string) (UserList, error) {
 	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/users/email/%s", aimsServicePath, url.QueryEscape(email)), nil, nil, nil)
 
