@@ -240,3 +240,45 @@ func (api *API) GetUserDetailsById(userId string, includeAccessKeys bool, includ
 
 	return r, nil
 }
+
+// ListUsersByEmail retrieves users by email address.
+// Access keys and user credentials are included by this endpoint via the API by default.
+// You can include access keys, credentials, or role IDs with includeAccessKeys,
+// includeUserCredentials, and includeRoleIds respectively.
+// Specifying roleId will only return users that belong to that role.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-ListUsers
+func (api *API) ListUsers(includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool, roleId string) (UserList, error) {
+	var params = map[string]string{
+		"include_access_keys":     "false",
+		"include_user_credential": "false",
+		"include_role_ids":        "false",
+	}
+
+	if includeAccessKeys {
+		params["include_access_keys"] = "true"
+	}
+	if includeUserCredentials {
+		params["include_user_credential"] = "true"
+	}
+	if includeRoleIds {
+		params["include_role_ids"] = "true"
+	}
+	if roleId != "" {
+		params["role_id"] = roleId
+	}
+
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/users", aimsServicePath, api.AccountID), nil, params, nil)
+
+	if err != nil {
+		return UserList{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r UserList
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return UserList{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}

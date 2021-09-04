@@ -14,6 +14,7 @@ var (
 	deleteUserPath         = fmt.Sprintf("/%s/%s/users/%s", aimsServicePath, testAccountId, testUserId)
 	listUsersByEmailPath   = fmt.Sprintf("/%s/users/email/%s", aimsServicePath, testEmail)
 	getUserDetailsByIdPath = fmt.Sprintf("/%s/user/%s", aimsServicePath, testUserId)
+	listUsersPath          = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
 )
 
 func TestAims_Authenticate(t *testing.T) {
@@ -660,6 +661,145 @@ func TestAims_GetUserDetailsByIdUnmarshalError(t *testing.T) {
 	})
 
 	_, err := client.GetUserDetailsById(testUserId, true, true, true)
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
+}
+
+func TestAims_ListUsers(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const response = `
+	{
+		"users": [{
+			"id": "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
+			"account_id": "12345678",
+			"name": "Bob Loblaw",
+			"username": "bob@bobloblawlaw.com",
+			"email": "bob@bobloblawlaw.com",
+			"active": true,
+			"locked": false,
+			"version": 1,
+			"linked_users": [],
+			"mfa_enabled": true,
+			"role_ids": ["2A33175D-86EF-44B5-AA39-C9549F6306DF"],
+			"user_credential": {
+				"version": 2,
+				"one_time_password": false,
+				"last_login": 1548880711,
+				"created": {
+					"at": 1430185015,
+					"by": "System"
+				},
+				"modified": {
+					"at": 1430185015,
+					"by": "System"
+				}
+			},
+			"access_keys": [{
+				"label": "api access",
+				"last_login": 0,
+				"created": {
+					"at": 1525410880,
+					"by": "System"
+				},
+				"modified": {
+					"at": 1525410880,
+					"by": "System"
+				},
+				"access_key_id": "61fb235617960503"
+			}],
+			"created": {
+				"at": 1430185015,
+				"by": "System"
+			},
+			"modified": {
+				"at": 1430185015,
+				"by": "System"
+			}
+		}]
+	}`
+
+	mux.HandleFunc(listUsersPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, response)
+	})
+
+	var mfaEnabled bool = true
+	var userCredential UserCredential = UserCredential{
+		Version:         2,
+		OneTimePassword: false,
+		LastLogin:       1548880711,
+		Created:         ModifiedCreated{At: 1430185015, By: "System"},
+		Modified:        ModifiedCreated{At: 1430185015, By: "System"},
+	}
+	var accessKeys []AccessKey = []AccessKey{
+		{
+			Label:       "api access",
+			LastLogin:   0,
+			Created:     ModifiedCreated{At: 1525410880, By: "System"},
+			Modified:    ModifiedCreated{At: 1525410880, By: "System"},
+			AccessKeyID: "61fb235617960503",
+		},
+	}
+
+	want := UserList{
+		Users: []User{
+			{
+				ID:             testUserId,
+				AccountID:      testAccountId,
+				Name:           testUserFullName,
+				Email:          testEmail,
+				Username:       testEmail,
+				Active:         true,
+				Version:        1,
+				MfaEnabled:     &mfaEnabled,
+				Locked:         false,
+				LinkedUsers:    []LinkedUser{},
+				Created:        ModifiedCreated{At: 1430185015, By: "System"},
+				Modified:       ModifiedCreated{At: 1430185015, By: "System"},
+				UserCredential: &userCredential,
+				AccessKeys:     &accessKeys,
+				RoleIds:        &[]string{"2A33175D-86EF-44B5-AA39-C9549F6306DF"},
+			},
+		},
+	}
+
+	users, err := client.ListUsers(true, true, true, "")
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, users, want)
+	}
+}
+
+func TestAims_ListUsersMakeRequestError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(listUsersPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	_, err := client.ListUsers(true, true, true, "")
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+}
+
+func TestAims_ListUsersUnmarshalError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(listUsersPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
+	})
+
+	_, err := client.ListUsers(true, true, true, "")
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)
