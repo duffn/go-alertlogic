@@ -317,3 +317,41 @@ func (api *API) UpdateUserDetails(userId string, user UpdateUserRequest, oneTime
 
 	return r, nil
 }
+
+// GetUserDetailsByUsername retrieves a user's details by their username.
+// Access keys and user credentials are included by this endpoint via the API by default.
+// You can include access keys, credentials, or role IDs with includeAccessKeys,
+// includeUserCredentials, and includeRoleIds respectively.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetailsByUserId
+func (api *API) GetUserDetailsByUsername(username string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
+	var params = map[string]string{
+		"include_access_keys":     "false",
+		"include_user_credential": "false",
+		"include_role_ids":        "false",
+	}
+
+	if includeAccessKeys {
+		params["include_access_keys"] = "true"
+	}
+	if includeUserCredentials {
+		params["include_user_credential"] = "true"
+	}
+	if includeRoleIds {
+		params["include_role_ids"] = "true"
+	}
+
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/user/username/%s", aimsServicePath, username), nil, params, nil)
+
+	if err != nil {
+		return User{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r User
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return User{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
