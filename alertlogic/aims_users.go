@@ -36,19 +36,39 @@ type Account struct {
 
 // User is the user level information.
 type User struct {
-	ID          string          `json:"id,omitempty"`
-	AccountID   string          `json:"account_id,omitempty"`
-	Name        string          `json:"name,omitempty"`
-	Username    string          `json:"username,omitempty"`
-	Email       string          `json:"email,omitempty"`
-	Active      bool            `json:"active,omitempty"`
-	Locked      bool            `json:"locked,omitempty"`
-	Version     int64           `json:"version,omitempty"`
-	MfaEnabled  *bool           `json:"mfa_enabled,omitempty"`
-	MobilePhone *string         `json:"mobile_phone,omitempty"`
-	LinkedUsers []LinkedUser    `json:"linked_users,omitempty"`
+	ID             string          `json:"id,omitempty"`
+	AccountID      string          `json:"account_id,omitempty"`
+	Name           string          `json:"name,omitempty"`
+	Username       string          `json:"username,omitempty"`
+	Email          string          `json:"email,omitempty"`
+	Active         bool            `json:"active,omitempty"`
+	Locked         bool            `json:"locked,omitempty"`
+	Version        int64           `json:"version,omitempty"`
+	MfaEnabled     *bool           `json:"mfa_enabled,omitempty"`
+	MobilePhone    *string         `json:"mobile_phone,omitempty"`
+	LinkedUsers    []LinkedUser    `json:"linked_users,omitempty"`
+	UserCredential *UserCredential `json:"user_credential,omitempty"`
+	RoleIds        *[]string       `json:"role_ids,omitempty"`
+	AccessKeys     *[]AccessKey    `json:"access_keys,omitempty"`
+	Created        ModifiedCreated `json:"created,omitempty"`
+	Modified       ModifiedCreated `json:"modified,omitempty"`
+}
+
+// UserCredential is a user's credential information.
+type UserCredential struct {
+	Version         int             `json:"version,omitempty"`
+	OneTimePassword bool            `json:"one_time_password,omitempty"`
+	LastLogin       int             `json:"last_login,omitempty"`
+	Created         ModifiedCreated `json:"created,omitempty"`
+	Modified        ModifiedCreated `json:"modified,omitempty"`
+}
+
+type AccessKey struct {
+	Label       string          `json:"label,omitempty"`
+	LastLogin   int             `json:"last_login,omitempty"`
 	Created     ModifiedCreated `json:"created,omitempty"`
 	Modified    ModifiedCreated `json:"modified,omitempty"`
+	AccessKeyID string          `json:"access_key_id,omitempty"`
 }
 
 // LinkedUser are any users linked to the current user.
@@ -159,6 +179,44 @@ func (api *API) ListUsersByEmail(email string) (UserList, error) {
 	err = json.Unmarshal(res, &r)
 	if err != nil {
 		return UserList{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// GetUserDetailsById retrieves a user's details by their ID.
+// Access keys and user credentials are included by this endpoint via the API by default.
+// You can include access keys, credentials, or role IDs with includeAccessKeys,
+// includeUserCredentials, and includeRoleIds respectively.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetailsByUserId
+func (api *API) GetUserDetailsById(userId string, includeAccessKeys bool, includeUserCredentials bool, includeRoleIds bool) (User, error) {
+	var params = map[string]string{
+		"include_access_keys":     "false",
+		"include_user_credential": "false",
+		"include_role_ids":        "false",
+	}
+
+	if includeAccessKeys {
+		params["include_access_keys"] = "true"
+	}
+	if includeUserCredentials {
+		params["include_user_credential"] = "true"
+	}
+	if includeRoleIds {
+		params["include_role_ids"] = "true"
+	}
+
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/user/%s", aimsServicePath, userId), nil, params, nil)
+
+	if err != nil {
+		return User{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r User
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return User{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
