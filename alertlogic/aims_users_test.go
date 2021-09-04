@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	authenticatePath     = fmt.Sprintf("/%s/authenticate", aimsServicePath)
-	createUserPath       = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
-	deleteUserPath       = fmt.Sprintf("/%s/%s/users/%s", aimsServicePath, testAccountId, testUserId)
-	listUsersByEmailPath = fmt.Sprintf("/%s/users/email/%s", aimsServicePath, testEmail)
+	authenticatePath       = fmt.Sprintf("/%s/authenticate", aimsServicePath)
+	createUserPath         = fmt.Sprintf("/%s/%s/users", aimsServicePath, testAccountId)
+	deleteUserPath         = fmt.Sprintf("/%s/%s/users/%s", aimsServicePath, testAccountId, testUserId)
+	listUsersByEmailPath   = fmt.Sprintf("/%s/users/email/%s", aimsServicePath, testEmail)
+	getUserDetailsByIdPath = fmt.Sprintf("/%s/user/%s", aimsServicePath, testUserId)
 )
 
 func TestAims_Authenticate(t *testing.T) {
@@ -358,6 +359,94 @@ func TestAims_ListUsersByEmailUnmarshalError(t *testing.T) {
 	})
 
 	_, err := client.ListUsersByEmail(testEmail)
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
+}
+
+func TestAims_GetUserDetailsById(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const response = `
+	{
+		"id": "715A4EC0-9833-4D6E-9C03-A537E3F98D23",
+		"account_id": "12345678",
+		"name": "Bob Loblaw",
+		"username": "bob@bobloblawlaw.com",
+		"email": "bob@bobloblawlaw.com",
+		"active": true,
+		"locked": false,
+		"version": 1,
+		"linked_users": [],
+		"mobile_phone": "123-555-0123",
+		"created": {
+			"at": 1430185015,
+			"by": "System"
+		},
+		"modified": {
+			"at": 1430185015,
+			"by": "System"
+		}
+	}`
+
+	mux.HandleFunc(getUserDetailsByIdPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, response)
+	})
+
+	var mobilePhone string = "123-555-0123"
+
+	want := User{
+		ID:          testUserId,
+		AccountID:   testAccountId,
+		Name:        testUserFullName,
+		Email:       testEmail,
+		Username:    testEmail,
+		Active:      true,
+		Version:     1,
+		MfaEnabled:  nil,
+		MobilePhone: &mobilePhone,
+		Locked:      false,
+		LinkedUsers: []LinkedUser{},
+		Created:     ModifiedCreated{At: 1430185015, By: "System"},
+		Modified:    ModifiedCreated{At: 1430185015, By: "System"},
+	}
+
+	user, err := client.GetUserDetailsById(testUserId)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, user, want)
+	}
+}
+
+func TestAims_GetUserDetailsByIdMakeRequestError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(getUserDetailsByIdPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	_, err := client.GetUserDetailsById(testUserId)
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+}
+
+func TestAims_GetUserDetailsByIdUnmarshalError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(getUserDetailsByIdPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
+	})
+
+	_, err := client.GetUserDetailsById(testUserId)
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)

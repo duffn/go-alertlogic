@@ -163,3 +163,22 @@ func (api *API) ListUsersByEmail(email string) (UserList, error) {
 
 	return r, nil
 }
+
+// GetUserDetailsById retrieves a user's details by their ID.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Resources-GetUserDetailsByUserId
+func (api *API) GetUserDetailsById(userId string) (User, error) {
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/user/%s", aimsServicePath, userId), nil, nil, nil)
+
+	if err != nil {
+		return User{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r User
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return User{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
