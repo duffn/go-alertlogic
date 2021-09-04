@@ -169,7 +169,9 @@ func TestAims_CreateUser(t *testing.T) {
 		fmt.Fprint(w, response)
 	})
 
-	want := CreateUserResponse{
+	var mobilePhone string = "123-555-0123"
+
+	want := User{
 		ID:          testUserId,
 		AccountID:   testAccountId,
 		Name:        testUserFullName,
@@ -177,7 +179,7 @@ func TestAims_CreateUser(t *testing.T) {
 		Username:    testEmail,
 		Active:      true,
 		Version:     1,
-		MobilePhone: "123-555-0123",
+		MobilePhone: &mobilePhone,
 		Locked:      false,
 		LinkedUsers: []LinkedUser{},
 		Created:     ModifiedCreated{At: 1430185015, By: "System"},
@@ -303,23 +305,23 @@ func TestAims_ListUsersByEmail(t *testing.T) {
 		fmt.Fprint(w, response)
 	})
 
-	want := ListUsersByEmailResponse{
-		Users: []ListUsersUser{
+	var mfaEnabled bool = true
+
+	want := UserList{
+		Users: []User{
 			{
-				User: User{
-					ID:          testUserId,
-					AccountID:   testAccountId,
-					Name:        testUserFullName,
-					Email:       testEmail,
-					Username:    testEmail,
-					Active:      true,
-					Version:     1,
-					Locked:      false,
-					LinkedUsers: []LinkedUser{},
-					Created:     ModifiedCreated{At: 1430185015, By: "System"},
-					Modified:    ModifiedCreated{At: 1430185015, By: "System"},
-				},
-				MfaEnabled: true,
+				ID:          testUserId,
+				AccountID:   testAccountId,
+				Name:        testUserFullName,
+				Email:       testEmail,
+				Username:    testEmail,
+				Active:      true,
+				Version:     1,
+				MfaEnabled:  &mfaEnabled,
+				Locked:      false,
+				LinkedUsers: []LinkedUser{},
+				Created:     ModifiedCreated{At: 1430185015, By: "System"},
+				Modified:    ModifiedCreated{At: 1430185015, By: "System"},
 			},
 		},
 	}
