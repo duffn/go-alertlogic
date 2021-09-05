@@ -30,10 +30,12 @@ const (
 	Denied  Permission = "denied"
 )
 
-type RoleRequest struct {
+type CreateRoleRequest struct {
 	Name        string                `json:"name"`
 	Permissions map[string]Permission `json:"permissions"`
 }
+
+type UpdateRoleRequest = CreateRoleRequest
 
 // GetRoleDetails retrieves a role's details.
 //
@@ -90,6 +92,58 @@ func (api *API) getRoles(path string) (RolesList, error) {
 	err = json.Unmarshal(res, &r)
 	if err != nil {
 		return RolesList{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// CreateUser creates a new role.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Role_Resources-CreateRole
+func (api *API) CreateRole(role CreateRoleRequest) (Role, error) {
+	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/roles", aimsServicePath, api.AccountID), nil, nil, role)
+
+	if err != nil {
+		return Role{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r Role
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return Role{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// DeleteRole deletes a role.
+// Note that this endpoint returns a 204 status code even if the role ID does not exist.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Role_Resources-DeleteRole
+func (api *API) DeleteRole(roleId string) (int, error) {
+	_, statusCode, err := api.makeRequest("DELETE", fmt.Sprintf("%s/%s/roles/%s", aimsServicePath, api.AccountID, roleId), nil, nil, nil)
+
+	if err != nil {
+		return statusCode, errors.Wrap(err, errMakeRequestError)
+	}
+
+	return statusCode, nil
+}
+
+// UpdateRoleDetails updates a role.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Role_Resources-UpdateRole
+func (api *API) UpdateRoleDetails(roleId string, role UpdateRoleRequest) (Role, error) {
+	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/roles/%s", aimsServicePath, api.AccountID, roleId), nil, nil, role)
+
+	if err != nil {
+		return Role{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r Role
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return Role{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil

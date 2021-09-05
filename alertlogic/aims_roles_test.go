@@ -13,6 +13,8 @@ var (
 	listGlobalRolesPath      = fmt.Sprintf("/%s/roles", aimsServicePath)
 	getRoleDetailsPath       = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
 	getGlobalRoleDetailsPath = fmt.Sprintf("/%s/roles/%s", aimsServicePath, testRoleId)
+	deleteRolePath           = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
+	updateRolePath           = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
 )
 
 func TestAims_ListRoles(t *testing.T) {
@@ -426,6 +428,92 @@ func TestAims_GetGlobalRoleDetailsUnmarshalError(t *testing.T) {
 	})
 
 	_, err := client.GetGlobalRoleDetails(testRoleId)
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
+}
+
+func TestAims_UpdateRoleDetails(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const response = `
+	{
+		"id": "F578CCE5-9574-4489-BF05-A04075838DE3",
+		"account_id": "12345678",
+		"name": "Read Only",
+		"permissions": {
+			"*:own:list:*": "allowed",
+			"*:own:get:*": "allowed",
+			"*:own:*:*": "allowed"
+		},
+		"legacy_permissions": [
+			"PERM1",
+			"PERM2"
+		],
+		"version": 1,
+		"global": false,
+		"created": {
+			"at": 1430184599,
+			"by": "System"
+		},
+		"modified": {
+			"at": 1430184599,
+			"by": "System"
+		}
+		
+	}`
+
+	mux.HandleFunc(updateRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, response)
+	})
+
+	want := Role{
+		ID:                testRoleId,
+		AccountID:         testAccountId,
+		Name:              "Read Only",
+		Permissions:       map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed},
+		LegacyPermissions: []string{"PERM1", "PERM2"},
+		Version:           1,
+		Global:            false,
+		Created:           ModifiedCreated{At: 1430184599, By: "System"},
+		Modified:          ModifiedCreated{At: 1430184599, By: "System"},
+	}
+
+	role, err := client.UpdateRoleDetails(testRoleId, UpdateRoleRequest{Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}})
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, role, want)
+	}
+}
+
+func TestAims_UpdateRoleDetailsMakeRequestError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(updateRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	_, err := client.UpdateRoleDetails(testRoleId, UpdateRoleRequest{Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}})
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+}
+
+func TestAims_UpdateRoleDetailsUnmarshalError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(updateRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
+	})
+
+	_, err := client.UpdateRoleDetails(testRoleId, UpdateRoleRequest{Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}})
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)
