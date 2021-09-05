@@ -65,38 +65,6 @@ func (api *API) ListGlobalRoles() (RolesList, error) {
 	return api.getRoles(fmt.Sprintf("%s/roles", aimsServicePath))
 }
 
-// getRole holds shared logic for retrieving a Rols from the API.
-func (api *API) getRole(path string) (Role, error) {
-	res, _, err := api.makeRequest("GET", path, nil, nil, nil)
-	if err != nil {
-		return Role{}, errors.Wrap(err, errMakeRequestError)
-	}
-
-	var r Role
-	err = json.Unmarshal(res, &r)
-	if err != nil {
-		return Role{}, errors.Wrap(err, errUnmarshalError)
-	}
-
-	return r, nil
-}
-
-// getRoles holds shared logic for retrieving multiple Roles from the API.
-func (api *API) getRoles(path string) (RolesList, error) {
-	res, _, err := api.makeRequest("GET", path, nil, nil, nil)
-	if err != nil {
-		return RolesList{}, errors.Wrap(err, errMakeRequestError)
-	}
-
-	var r RolesList
-	err = json.Unmarshal(res, &r)
-	if err != nil {
-		return RolesList{}, errors.Wrap(err, errUnmarshalError)
-	}
-
-	return r, nil
-}
-
 // CreateUser creates a new role.
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Role_Resources-CreateRole
@@ -144,6 +112,38 @@ func (api *API) UpdateRoleDetails(roleId string, role UpdateRoleRequest) (Role, 
 	err = json.Unmarshal(res, &r)
 	if err != nil {
 		return Role{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// getRole holds shared logic for retrieving a Rols from the API.
+func (api *API) getRole(path string) (Role, error) {
+	res, _, err := api.makeRequest("GET", path, nil, nil, nil)
+	if err != nil {
+		return Role{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r Role
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return Role{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
+
+// getRoles holds shared logic for retrieving multiple Roles from the API.
+func (api *API) getRoles(path string) (RolesList, error) {
+	res, _, err := api.makeRequest("GET", path, nil, nil, nil)
+	if err != nil {
+		return RolesList{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r RolesList
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return RolesList{}, errors.Wrap(err, errUnmarshalError)
 	}
 
 	return r, nil
