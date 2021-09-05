@@ -27,6 +27,7 @@ var (
 const (
 	testRelatedAccountId = "98765432"
 	testUserId           = "715A4EC0-9833-4D6E-9C03-A537E3F98D23"
+	testRoleId           = "F578CCE5-9574-4489-BF05-A04075838DE3"
 	testEmail            = "bob@bobloblawlaw.com"
 	testUserFullName     = "Bob Loblaw"
 )
