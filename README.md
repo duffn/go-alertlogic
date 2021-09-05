@@ -4,7 +4,7 @@
 
 `go-alertlogic` is a Go client library for the Alert Logic Cloud Insight API.
 
-This is in _very early_ development and only supports a few of the [myriad of endpoints](https://console.cloudinsight.alertlogic.com/api/#/) of the API. Except the API here to break often during early development.
+This is in _very early_ development and only supports a few of the [myriad of endpoints](https://console.cloudinsight.alertlogic.com/api/#/) of the API. Expect the API here to break often during early development.
 
 ## Installation
 
