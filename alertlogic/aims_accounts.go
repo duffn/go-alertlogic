@@ -15,6 +15,7 @@ type AccountDetails struct {
 	Version             int64           `json:"version,omitempty"`
 	AccessibleLocations []string        `json:"accessible_locations,omitempty"`
 	DefaultLocation     string          `json:"default_location,omitempty"`
+	MfaRequired         bool            `json:"mfa_required,omitempty"`
 	Created             ModifiedCreated `json:"created,omitempty"`
 	Modified            ModifiedCreated `json:"modified,omitempty"`
 }
@@ -27,6 +28,10 @@ const (
 	Managed  AccountRelationship = "managed"
 	Managing AccountRelationship = "managing"
 )
+
+type UpdateAccountDetailsRequest struct {
+	MfaRequired bool `json:"mfa_required"`
+}
 
 // GetAccountDetails gets details of an account.
 //
@@ -61,4 +66,24 @@ func (api *API) GetAccountRelationship(relatedAccountId string, accountRelations
 	}
 
 	return statusCode, nil
+}
+
+// UpdateAccountDetails updates details of an account.
+// This endpoint only allows updating of the `mfa_enabled` value.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_Account_Resources-UpdateAccount
+func (api *API) UpdateAccountDetails(updateAccountDetailsRequest UpdateAccountDetailsRequest) (AccountDetails, error) {
+	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/account", aimsServicePath, api.AccountID), nil, nil, updateAccountDetailsRequest)
+
+	if err != nil {
+		return AccountDetails{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r AccountDetails
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return AccountDetails{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
 }

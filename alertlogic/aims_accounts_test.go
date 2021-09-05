@@ -119,3 +119,81 @@ func TestAims_GetAccountRelationshipNotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testNotFoundError)
 }
+
+func TestAims_UpdateAccountDetails(t *testing.T) {
+	setup()
+	defer teardown()
+
+	const response = `
+	{
+		"id": "12345678",
+		"name": "Company Name",
+		"active": true,
+		"version": 1,
+		"accessible_locations": ["insight-us-virginia"],
+		"default_location": "insight-us-virginia",
+		"mfa_required": false,
+		"created": {
+			"at": 1430184599,
+			"by": "System"
+		},
+		"modified": {
+			"at": 1430184599,
+			"by": "System"
+		}
+	}`
+
+	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, response)
+	})
+
+	want := AccountDetails{
+		ID:                  "12345678",
+		Name:                "Company Name",
+		Active:              true,
+		MfaRequired:         false,
+		Version:             1,
+		AccessibleLocations: []string{"insight-us-virginia"},
+		DefaultLocation:     "insight-us-virginia",
+		Created:             ModifiedCreated{At: 1430184599, By: "System"},
+		Modified:            ModifiedCreated{At: 1430184599, By: "System"},
+	}
+
+	user, err := client.UpdateAccountDetails(UpdateAccountDetailsRequest{MfaRequired: false})
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, user, want)
+	}
+}
+
+func TestAims_UpdateAccountDetailsMakeRequestError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	_, err := client.UpdateAccountDetails(UpdateAccountDetailsRequest{MfaRequired: false})
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+}
+
+func TestAims_UpdateAccountDetailsUnmarshalError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
+	})
+
+	_, err := client.UpdateAccountDetails(UpdateAccountDetailsRequest{MfaRequired: false})
+
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
+}
