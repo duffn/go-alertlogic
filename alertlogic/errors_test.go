@@ -18,7 +18,7 @@ func callFunction(obj interface{}, fn string, args map[string]interface{}) (res 
 	return method.Call(inputs)
 }
 
-type MakeRequestError struct {
+type RequestError struct {
 	Group        string
 	Path         string
 	Method       string
@@ -26,7 +26,7 @@ type MakeRequestError struct {
 	Arguments    map[string]interface{}
 }
 
-var tests = []MakeRequestError{
+var tests = []RequestError{
 	{
 		Group:        "accounts",
 		Path:         accountDetailsPath,
@@ -41,6 +41,57 @@ var tests = []MakeRequestError{
 		FunctionName: "UpdateAccountDetails",
 		Arguments: map[string]interface{}{
 			"updateAccountDetailsRequest": UpdateAccountDetailsRequest{MfaRequired: false},
+		},
+	},
+	{
+		Group:        "roles",
+		Path:         listRolesPath,
+		Method:       "GET",
+		FunctionName: "ListRoles",
+		Arguments:    nil,
+	},
+	{
+		Group:        "roles",
+		Path:         listGlobalRolesPath,
+		Method:       "GET",
+		FunctionName: "ListGlobalRoles",
+		Arguments:    nil,
+	},
+	{
+		Group:        "roles",
+		Path:         getRoleDetailsPath,
+		Method:       "GET",
+		FunctionName: "GetRoleDetails",
+		Arguments: map[string]interface{}{
+			"roleId": testRoleId,
+		},
+	},
+	{
+		Group:        "roles",
+		Path:         getGlobalRoleDetailsPath,
+		Method:       "GET",
+		FunctionName: "GetGlobalRoleDetails",
+		Arguments: map[string]interface{}{
+			"roleId": testRoleId,
+		},
+	},
+	{
+		Group:        "roles",
+		Path:         updateRolePath,
+		Method:       "POST",
+		FunctionName: "UpdateRoleDetails",
+		Arguments: map[string]interface{}{
+			"roleId": testRoleId,
+			"role":   UpdateRoleRequest{Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}},
+		},
+	},
+	{
+		Group:        "roles",
+		Path:         createRolePath,
+		Method:       "POST",
+		FunctionName: "CreateRole",
+		Arguments: map[string]interface{}{
+			"role": CreateRoleRequest{Name: "Read Only", Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}},
 		},
 	},
 }
