@@ -1,0 +1,81 @@
+package alertlogic
+
+import (
+	"fmt"
+	"net/http"
+	"reflect"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func callFunction(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
+	method := reflect.ValueOf(obj).MethodByName(fn)
+	var inputs []reflect.Value
+	for _, v := range args {
+		inputs = append(inputs, reflect.ValueOf(v))
+	}
+	return method.Call(inputs)
+}
+
+type MakeRequestError struct {
+	Group        string
+	Path         string
+	Method       string
+	FunctionName string
+	Arguments    map[string]interface{}
+}
+
+var tests = []MakeRequestError{
+	{
+		Group:        "accounts",
+		Path:         accountDetailsPath,
+		Method:       "GET",
+		FunctionName: "GetAccountDetails",
+		Arguments:    nil,
+	},
+	{
+		Group:        "accounts",
+		Path:         accountDetailsPath,
+		Method:       "POST",
+		FunctionName: "UpdateAccountDetails",
+		Arguments: map[string]interface{}{
+			"updateAccountDetailsRequest": UpdateAccountDetailsRequest{MfaRequired: false},
+		},
+	},
+}
+
+func Test_MakeRequestError(t *testing.T) {
+	for _, tt := range tests {
+		setup()
+		defer teardown()
+
+		mux.HandleFunc(tt.Path, func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, tt.Method, r.Method, "Expected method '%s', got %s", tt.Method, r.Method)
+			w.WriteHeader(http.StatusUnauthorized)
+		})
+
+		res := callFunction(client, tt.FunctionName, tt.Arguments)
+		err, _ := res[1].Interface().(error)
+
+		assert.Error(t, err)
+		assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
+	}
+}
+func Test_UnmarshalError(t *testing.T) {
+	for _, tt := range tests {
+		setup()
+		defer teardown()
+
+		mux.HandleFunc(tt.Path, func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, tt.Method, r.Method, "Expected method '%s', got %s", tt.Method, r.Method)
+			fmt.Fprintf(w, "not json")
+		})
+
+		res := callFunction(client, tt.FunctionName, tt.Arguments)
+		err, _ := res[1].Interface().(error)
+
+		assert.Error(t, err)
+		assert.Equal(t, err.Error(), testUnmarshalError)
+	}
+}
