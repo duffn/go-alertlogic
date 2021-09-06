@@ -94,6 +94,33 @@ var tests = []RequestError{
 			"role": CreateRoleRequest{Name: "Read Only", Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}},
 		},
 	},
+	{
+		Group:        "user_roles",
+		Path:         getAssignedRolesPath,
+		Method:       "GET",
+		FunctionName: "GetAssignedRoles",
+		Arguments: map[string]interface{}{
+			"userId": testUserId,
+		},
+	},
+	{
+		Group:        "user_roles",
+		Path:         getAssignedRoleIDsPath,
+		Method:       "GET",
+		FunctionName: "GetAssignedRoleIDs",
+		Arguments: map[string]interface{}{
+			"userId": testUserId,
+		},
+	},
+	{
+		Group:        "user_roles",
+		Path:         getUserPermissionsPath,
+		Method:       "GET",
+		FunctionName: "GetUserPermissions",
+		Arguments: map[string]interface{}{
+			"userId": testUserId,
+		},
+	},
 }
 
 func Test_MakeRequestError(t *testing.T) {
