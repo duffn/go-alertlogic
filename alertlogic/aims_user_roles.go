@@ -57,3 +57,28 @@ func (api *API) GetUserPermissions(userId string) (PermissionsList, error) {
 
 	return r, nil
 }
+
+// GrantUserRole grants a role to a user.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Roles_Resources-GrantUserRole
+func (api *API) GrantUserRole(userId string, roleId string) (int, error) {
+	return api.userRoleAssignment("PUT", userId, roleId)
+}
+
+// RevokeUserRole revokes a role from a user.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/aims/#api-AIMS_User_Roles_Resources-RevokeRole
+func (api *API) RevokeUserRole(userId string, roleId string) (int, error) {
+	return api.userRoleAssignment("DELETE", userId, roleId)
+}
+
+// userRoleAssignment has shared functionality for granting or revoking user roles.
+func (api *API) userRoleAssignment(method string, userId string, roleId string) (int, error) {
+	_, statusCode, err := api.makeRequest(method, fmt.Sprintf("%s/%s/users/%s/roles/%s", aimsServicePath, api.AccountID, userId, roleId), nil, nil, nil)
+
+	if err != nil {
+		return statusCode, errors.Wrap(err, errMakeRequestError)
+	}
+
+	return statusCode, nil
+}

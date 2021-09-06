@@ -12,6 +12,8 @@ var (
 	getAssignedRolesPath   = fmt.Sprintf("/%s/%s/users/%s/roles", aimsServicePath, testAccountId, testUserId)
 	getAssignedRoleIDsPath = fmt.Sprintf("/%s/%s/users/%s/role_ids", aimsServicePath, testAccountId, testUserId)
 	getUserPermissionsPath = fmt.Sprintf("/%s/%s/users/%s/permissions", aimsServicePath, testAccountId, testUserId)
+	revokeUserRolePath     = fmt.Sprintf("/%s/%s/users/%s/roles/%s", aimsServicePath, testAccountId, testUserId, testRoleId)
+	grantUserRolePath      = fmt.Sprintf("/%s/%s/users/%s/roles/%s", aimsServicePath, testAccountId, testUserId, testRoleId)
 )
 
 func TestAims_GetAssignedRoles(t *testing.T) {
@@ -251,4 +253,76 @@ func TestAims_GetUserPermissionsUnmarshalError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), testUnmarshalError)
+}
+
+func TestAims_RevokeUserRole(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(revokeUserRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "DELETE", r.Method, "Expected method 'DELETE', got %s", r.Method)
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	revokeUserRoleResponse, err := client.RevokeUserRole(testUserId, testRoleId)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, revokeUserRoleResponse, http.StatusNoContent)
+	}
+}
+
+func TestAims_RevokeUserRoleError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	errorResponse := `{"error":"self_revoke_error"}`
+
+	mux.HandleFunc(revokeUserRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "DELETE", r.Method, "Expected method 'DELETE', got %s", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, errorResponse)
+	})
+
+	respCode, err := client.RevokeUserRole(testUserId, testRoleId)
+
+	assert.Error(t, err)
+	assert.Equal(t, respCode, http.StatusBadRequest)
+	assert.Equal(t, err.Error(), fmt.Sprintf("error from makeRequest: %s", errorResponse))
+}
+
+func TestAims_GrantUserRole(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc(grantUserRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method, "Expected method 'PUT', got %s", r.Method)
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	grantUserRoleResponse, err := client.GrantUserRole(testUserId, testRoleId)
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, grantUserRoleResponse, http.StatusNoContent)
+	}
+}
+
+func TestAims_GrantUserRoleError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	errorResponse := `{"error":"self_grant_error"}`
+
+	mux.HandleFunc(grantUserRolePath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method, "Expected method 'PUT', got %s", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, errorResponse)
+	})
+
+	respCode, err := client.GrantUserRole(testUserId, testRoleId)
+
+	assert.Error(t, err)
+	assert.Equal(t, respCode, http.StatusBadRequest)
+	assert.Equal(t, err.Error(), fmt.Sprintf("error from makeRequest: %s", errorResponse))
 }
