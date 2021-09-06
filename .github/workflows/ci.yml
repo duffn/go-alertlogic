@@ -2,11 +2,11 @@ name: CI
 
 on:
   push:
-    tags:
-      - "v*"
-    branches:
-      - main
+    paths-ignore:
+      - "README.md"
   pull_request:
+    paths-ignore:
+      - "README.md"
 
 jobs:
   golangci:
