@@ -13,9 +13,6 @@ var (
 	listGlobalRolesPath      = fmt.Sprintf("/%s/roles", aimsServicePath)
 	getRoleDetailsPath       = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
 	getGlobalRoleDetailsPath = fmt.Sprintf("/%s/roles/%s", aimsServicePath, testRoleId)
-	deleteRolePath           = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
-	updateRolePath           = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
-	createRolePath           = fmt.Sprintf("/%s/%s/roles", aimsServicePath, testAccountId)
 )
 
 func TestAims_ListRoles(t *testing.T) {
