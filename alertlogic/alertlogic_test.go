@@ -61,6 +61,13 @@ func TestAlertLogic_NewMissingCredentials(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), errEmptyUsernameOrPassword)
 	}
+
+	for _, tt := range credentials {
+		_, err := NewWithAccessKey(testAccountId, tt.username, tt.password)
+
+		assert.Error(t, err)
+		assert.Equal(t, err.Error(), errEmptyAccessKeyIdOrSecretKey)
+	}
 }
 
 func TestAlertLogic_NewMissingApiToken(t *testing.T) {
@@ -74,6 +81,10 @@ func TestAlertLogic_NewMissingAccountId(t *testing.T) {
 	_, err := NewWithUsernameAndPassword("", "username", "password")
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), errEmptyAccountId)
+
+	_, errAccessKey := NewWithAccessKey("", "username", "password")
+	assert.Error(t, errAccessKey)
+	assert.Equal(t, errAccessKey.Error(), errEmptyAccountId)
 
 	_, errApiToken := NewWithApiToken("", "abcd1234")
 	assert.Error(t, errApiToken)
