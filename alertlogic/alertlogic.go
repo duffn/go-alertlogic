@@ -70,6 +70,15 @@ func NewWithApiToken(accountId string, apiToken string) (*API, error) {
 	return api, nil
 }
 
+// NewWithAccessKey creates a new Alert Logic API client using an access key and secret key.
+func NewWithAccessKey(accountId string, accessKeyId string, secretKey string) (*API, error) {
+	if accessKeyId == "" || secretKey == "" {
+		return nil, errors.New(errEmptyAccessKeyIdOrSecretKey)
+	}
+
+	return NewWithUsernameAndPassword(accountId, accessKeyId, secretKey)
+}
+
 // NewWithUsernameAndPassword creates a new Alert Logic API client using a username and password.
 // Username and password should be an access key and secret key as noted in the documentation
 // https://docs.alertlogic.com/prepare/access-key-management.htm, but can also be your Alert Logic
