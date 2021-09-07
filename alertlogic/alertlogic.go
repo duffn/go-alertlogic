@@ -16,6 +16,8 @@ const (
 	apiURL = "https://api.cloudinsight.alertlogic.com"
 	// aimsServicePath is the path for the aims service.
 	aimsServicePath = "aims/v1"
+	// assetsQueryServicePath is the path for the assets query service.
+	assetsQueryServicePath = "assets_query/v1"
 )
 
 // API holds the configuration for the current API client.
