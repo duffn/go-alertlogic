@@ -18,6 +18,8 @@ const (
 	aimsServicePath = "aims/v1"
 	// assetsQueryServicePath is the path for the assets query service.
 	assetsQueryServicePath = "assets_query/v1"
+	// deploymentServicePath is the path for the deployment service.
+	deploymentServicePath = "deployments/v1"
 )
 
 // API holds the configuration for the current API client.
