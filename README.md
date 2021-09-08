@@ -1,6 +1,6 @@
 # go-alertlogic
 
-![CI](https://github.com/duffn/go-alertlogic/actions/workflows/ci.yml/badge.svg) [![codecov](https://codecov.io/gh/duffn/go-alertlogic/branch/main/graph/badge.svg?token=wH2QcSPvpn)](https://codecov.io/gh/duffn/go-alertlogic) [![Go Reference](https://pkg.go.dev/badge/github.com/duffn/go-alertlogic.svg)](https://pkg.go.dev/github.com/duffn/go-alertlogic)
+![CI](https://github.com/duffn/go-alertlogic/actions/workflows/ci.yml/badge.svg) [![codecov](https://codecov.io/gh/duffn/go-alertlogic/branch/main/graph/badge.svg?token=wH2QcSPvpn)](https://codecov.io/gh/duffn/go-alertlogic) [![Go Report Card](https://goreportcard.com/badge/github.com/duffn/go-alertlogic)](https://goreportcard.com/report/github.com/duffn/go-alertlogic) [![Go Reference](https://pkg.go.dev/badge/github.com/duffn/go-alertlogic.svg)](https://pkg.go.dev/github.com/duffn/go-alertlogic)
 
 `go-alertlogic` is a Go client library for the Alert Logic Cloud Insight API.
 
