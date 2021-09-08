@@ -27,10 +27,10 @@ import (
 
 func main() {
 	// Create an API instance.
-	api, err := alertlogic.NewWithUsernameAndPassword(
+	api, err := alertlogic.NewWithAccessKey(
 		os.Getenv("ALERTLOGIC_ACCOUNT_ID"),
-		os.Getenv("ALERTLOGIC_USERNAME"),
-		os.Getenv("ALERTLOGIC_PASSWORD"),
+		os.Getenv("ALERTLOGIC_ACCESS_KEY_ID"),
+		os.Getenv("ALERTLOGIC_SECRET_KEY"),
 	)
 	if err != nil {
 		log.Fatal(err)
