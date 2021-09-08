@@ -90,3 +90,21 @@ func (api *API) ListDeployments() ([]Deployment, error) {
 
 	return r, nil
 }
+
+// GetDeployment gets a single deployment for an account.
+//
+// API reference: https://console.cloudinsight.alertlogic.com/api/deployments/#api-Resources-GetDeployment
+func (api *API) GetDeployment(deploymentId string) (Deployment, error) {
+	res, _, err := api.makeRequest("GET", fmt.Sprintf("%s/%s/deployments/%s", deploymentServicePath, api.AccountID, deploymentId), nil, nil, nil)
+	if err != nil {
+		return Deployment{}, errors.Wrap(err, errMakeRequestError)
+	}
+
+	var r Deployment
+	err = json.Unmarshal(res, &r)
+	if err != nil {
+		return Deployment{}, errors.Wrap(err, errUnmarshalError)
+	}
+
+	return r, nil
+}
