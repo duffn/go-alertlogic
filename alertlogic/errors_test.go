@@ -111,7 +111,7 @@ var tests = []RequestError{
 	},
 	{
 		Group:        "users",
-		Path:         authenticatePath,
+		Path:         createUserPath,
 		Method:       "POST",
 		FunctionName: "CreateUser",
 		Arguments: map[string]interface{}{
