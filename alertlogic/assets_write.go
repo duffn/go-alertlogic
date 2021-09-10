@@ -1,12 +1,5 @@
 package alertlogic
 
-import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/pkg/errors"
-)
-
 type ExternalDNSAssetRequest struct {
 	Operation     string            `json:"operation,omitempty"`
 	Type          string            `json:"type,omitempty"`
@@ -32,29 +25,29 @@ type ExternalDNSAssetResponse struct {
 // CreateExternalDNSNameAsset creates a new asset of the type `external-dns-name` for AWS.
 //
 // API reference: https://console.cloudinsight.alertlogic.com/api/assets_write/#api-DeclareModify-DeclareAsset
-func (api *API) CreateExternalDNSNameAsset(deploymentId string, dnsName string) (ExternalDNSAssetResponse, error) {
-	asset := ExternalDNSAssetRequest{
-		Operation: "declare_asset",
-		Type:      "external-dns-name",
-		Scope:     "aws",
-		Key:       fmt.Sprintf("/external-dns-name/%s", dnsName),
-		Properties: map[string]string{
-			"dns_name": dnsName,
-			"name":     dnsName,
-		},
-	}
+// func (api *API) CreateExternalDNSNameAsset(deploymentId string, dnsName string) (ExternalDNSAssetResponse, error) {
+// 	asset := ExternalDNSAssetRequest{
+// 		Operation: "declare_asset",
+// 		Type:      "external-dns-name",
+// 		Scope:     "aws",
+// 		Key:       fmt.Sprintf("/external-dns-name/%s", dnsName),
+// 		Properties: map[string]string{
+// 			"dns_name": dnsName,
+// 			"name":     dnsName,
+// 		},
+// 	}
 
-	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/deployments/%s/assets", assetsWriteServicePath, api.AccountID, deploymentId), nil, nil, asset)
+// 	res, _, err := api.makeRequest("POST", fmt.Sprintf("%s/%s/deployments/%s/assets", assetsWriteServicePath, api.AccountID, deploymentId), nil, nil, asset)
 
-	if err != nil {
-		return ExternalDNSAssetResponse{}, errors.Wrap(err, errMakeRequestError)
-	}
+// 	if err != nil {
+// 		return ExternalDNSAssetResponse{}, errors.Wrap(err, errMakeRequestError)
+// 	}
 
-	var r ExternalDNSAssetResponse
-	err = json.Unmarshal(res, &r)
-	if err != nil {
-		return ExternalDNSAssetResponse{}, errors.Wrap(err, errUnmarshalError)
-	}
+// 	var r ExternalDNSAssetResponse
+// 	err = json.Unmarshal(res, &r)
+// 	if err != nil {
+// 		return ExternalDNSAssetResponse{}, errors.Wrap(err, errUnmarshalError)
+// 	}
 
-	return r, nil
-}
+// 	return r, nil
+// }
