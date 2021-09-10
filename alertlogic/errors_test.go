@@ -131,6 +131,53 @@ var tests = []RequestError{
 			true,
 		},
 	},
+	{
+		Group:        "users",
+		Path:         getUserDetailsByIdPath,
+		Method:       "GET",
+		FunctionName: "GetUserDetailsById",
+		Arguments: []interface{}{
+			testUserId,
+			true,
+			true,
+			true,
+		},
+	},
+	{
+		Group:        "users",
+		Path:         listUsersPath,
+		Method:       "GET",
+		FunctionName: "ListUsers",
+		Arguments: []interface{}{
+			true,
+			true,
+			true,
+			"",
+		},
+	},
+	{
+		Group:        "users",
+		Path:         updateUserPath,
+		Method:       "POST",
+		FunctionName: "UpdateUserDetails",
+		Arguments: []interface{}{
+			testUserId,
+			UpdateUserRequest{Email: "new@email.com"},
+			false,
+		},
+	},
+	{
+		Group:        "users",
+		Path:         getUserDetailsByUsernamePath,
+		Method:       "GET",
+		FunctionName: "GetUserDetailsByUsername",
+		Arguments: []interface{}{
+			testUserId,
+			true,
+			true,
+			true,
+		},
+	},
 }
 
 func Test_MakeRequestError(t *testing.T) {

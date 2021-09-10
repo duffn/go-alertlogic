@@ -551,36 +551,6 @@ func TestAims_GetUserDetailsByIdWithNoParams(t *testing.T) {
 	}
 }
 
-func TestAims_GetUserDetailsByIdMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getUserDetailsByIdPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetUserDetailsById(testUserId, true, true, true)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetUserDetailsByIdUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getUserDetailsByIdPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetUserDetailsById(testUserId, true, true, true)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_ListUsers(t *testing.T) {
 	setup()
 	defer teardown()
@@ -690,36 +660,6 @@ func TestAims_ListUsers(t *testing.T) {
 	}
 }
 
-func TestAims_ListUsersMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listUsersPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.ListUsers(true, true, true, "")
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_ListUsersUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listUsersPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.ListUsers(true, true, true, "")
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_UpdateUser(t *testing.T) {
 	setup()
 	defer teardown()
@@ -787,35 +727,6 @@ func TestAims_UpdateUserOneTimePasswordMissingPassword(t *testing.T) {
 	_, err := client.UpdateUserDetails(testUserId, UpdateUserRequest{Email: "new@email.com"}, true)
 
 	assert.Error(t, err, "oneTimePassword must be accompanied by UpdateUserRequest.Password")
-}
-
-func TestAims_UpdateUserMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(updateUserPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.UpdateUserDetails(testUserId, UpdateUserRequest{Email: "new@email.com"}, false)
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_UpdateUserUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(updateUserPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.UpdateUserDetails(testUserId, UpdateUserRequest{Email: "new@email.com", Password: "password"}, false)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }
 
 func TestAims_GetUserDetailsByUsername(t *testing.T) {
@@ -978,36 +889,6 @@ func TestAims_GetUserDetailsByUsernameWithNoParams(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, user, want)
 	}
-}
-
-func TestAims_GetUserDetailsByUsernameMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getUserDetailsByUsernamePath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetUserDetailsByUsername(testUserId, true, true, true)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetUserDetailsByUsernameUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getUserDetailsByUsernamePath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetUserDetailsByUsername(testUserId, true, true, true)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }
 
 func TestAims_GetUserDetails(t *testing.T) {
