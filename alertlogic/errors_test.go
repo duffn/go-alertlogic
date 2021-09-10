@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func callFunction(obj interface{}, fn string, args map[string]interface{}) (res []reflect.Value) {
+func callFunction(obj interface{}, fn string, args []interface{}) (res []reflect.Value) {
 	method := reflect.ValueOf(obj).MethodByName(fn)
 	var inputs []reflect.Value
 	for _, v := range args {
@@ -23,7 +23,7 @@ type RequestError struct {
 	Path         string
 	Method       string
 	FunctionName string
-	Arguments    map[string]interface{}
+	Arguments    []interface{}
 }
 
 var tests = []RequestError{
@@ -39,8 +39,8 @@ var tests = []RequestError{
 		Path:         accountDetailsPath,
 		Method:       "POST",
 		FunctionName: "UpdateAccountDetails",
-		Arguments: map[string]interface{}{
-			"updateAccountDetailsRequest": UpdateAccountDetailsRequest{MfaRequired: false},
+		Arguments: []interface{}{
+			UpdateAccountDetailsRequest{MfaRequired: false},
 		},
 	},
 	{
@@ -62,8 +62,8 @@ var tests = []RequestError{
 		Path:         getRoleDetailsPath,
 		Method:       "GET",
 		FunctionName: "GetRoleDetails",
-		Arguments: map[string]interface{}{
-			"roleId": testRoleId,
+		Arguments: []interface{}{
+			testRoleId,
 		},
 	},
 	{
@@ -71,8 +71,8 @@ var tests = []RequestError{
 		Path:         getGlobalRoleDetailsPath,
 		Method:       "GET",
 		FunctionName: "GetGlobalRoleDetails",
-		Arguments: map[string]interface{}{
-			"roleId": testRoleId,
+		Arguments: []interface{}{
+			testRoleId,
 		},
 	},
 	{
@@ -80,8 +80,8 @@ var tests = []RequestError{
 		Path:         getAssignedRolesPath,
 		Method:       "GET",
 		FunctionName: "GetAssignedRoles",
-		Arguments: map[string]interface{}{
-			"userId": testUserId,
+		Arguments: []interface{}{
+			testUserId,
 		},
 	},
 	{
@@ -89,8 +89,8 @@ var tests = []RequestError{
 		Path:         getAssignedRoleIDsPath,
 		Method:       "GET",
 		FunctionName: "GetAssignedRoleIDs",
-		Arguments: map[string]interface{}{
-			"userId": testUserId,
+		Arguments: []interface{}{
+			testUserId,
 		},
 	},
 	{
@@ -98,8 +98,8 @@ var tests = []RequestError{
 		Path:         getUserPermissionsPath,
 		Method:       "GET",
 		FunctionName: "GetUserPermissions",
-		Arguments: map[string]interface{}{
-			"userId": testUserId,
+		Arguments: []interface{}{
+			testUserId,
 		},
 	},
 	{
@@ -114,9 +114,9 @@ var tests = []RequestError{
 		Path:         createUserPath,
 		Method:       "POST",
 		FunctionName: "CreateUser",
-		Arguments: map[string]interface{}{
-			"user":            CreateUserRequest{Email: testEmail, Name: "Bob Loblaw"},
-			"oneTimePassword": false,
+		Arguments: []interface{}{
+			CreateUserRequest{Email: testEmail, Name: "Bob Loblaw"},
+			false,
 		},
 	},
 	{
@@ -124,11 +124,11 @@ var tests = []RequestError{
 		Path:         listUsersByEmailPath,
 		Method:       "GET",
 		FunctionName: "ListUsersByEmail",
-		Arguments: map[string]interface{}{
-			"email":                  testEmail,
-			"includeAccessKeys":      true,
-			"includeUserCredentials": true,
-			"includeRoleIds":         true,
+		Arguments: []interface{}{
+			testEmail,
+			true,
+			true,
+			true,
 		},
 	},
 }
