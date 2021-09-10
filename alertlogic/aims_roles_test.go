@@ -13,9 +13,6 @@ var (
 	listGlobalRolesPath      = fmt.Sprintf("/%s/roles", aimsServicePath)
 	getRoleDetailsPath       = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
 	getGlobalRoleDetailsPath = fmt.Sprintf("/%s/roles/%s", aimsServicePath, testRoleId)
-	deleteRolePath           = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
-	updateRolePath           = fmt.Sprintf("/%s/%s/roles/%s", aimsServicePath, testAccountId, testRoleId)
-	createRolePath           = fmt.Sprintf("/%s/%s/roles", aimsServicePath, testAccountId)
 )
 
 func TestAims_ListRoles(t *testing.T) {
@@ -314,132 +311,32 @@ func TestAims_GetGlobalRoleDetails(t *testing.T) {
 	}
 }
 
-func TestAims_UpdateRoleDetails(t *testing.T) {
+func TestAims_GetGlobalRoleDetailsMakeRequestError(t *testing.T) {
 	setup()
 	defer teardown()
 
-	const response = `
-	{
-		"id": "F578CCE5-9574-4489-BF05-A04075838DE3",
-		"account_id": "12345678",
-		"name": "Read Only",
-		"permissions": {
-			"*:own:list:*": "allowed",
-			"*:own:get:*": "allowed",
-			"*:own:*:*": "allowed"
-		},
-		"legacy_permissions": [
-			"PERM1",
-			"PERM2"
-		],
-		"version": 1,
-		"global": false,
-		"created": {
-			"at": 1430184599,
-			"by": "System"
-		},
-		"modified": {
-			"at": 1430184599,
-			"by": "System"
-		}
-		
-	}`
-
-	mux.HandleFunc(updateRolePath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
-
-		w.Header().Set("content-type", "application/json")
-		fmt.Fprint(w, response)
+	mux.HandleFunc(getGlobalRoleDetailsPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+		w.WriteHeader(http.StatusUnauthorized)
 	})
 
-	want := Role{
-		ID:                testRoleId,
-		AccountID:         testAccountId,
-		Name:              "Read Only",
-		Permissions:       map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed},
-		LegacyPermissions: []string{"PERM1", "PERM2"},
-		Version:           1,
-		Global:            false,
-		Created:           ModifiedCreated{At: 1430184599, By: "System"},
-		Modified:          ModifiedCreated{At: 1430184599, By: "System"},
-	}
+	_, err := client.GetGlobalRoleDetails(testRoleId)
 
-	role, err := client.UpdateRoleDetails(testRoleId, UpdateRoleRequest{Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}})
-
-	if assert.NoError(t, err) {
-		assert.Equal(t, role, want)
-	}
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
 }
 
-func TestAims_DeleteRole(t *testing.T) {
+func TestAims_GetGlobalRoleDetailsUnmarshalError(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc(deleteRolePath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "DELETE", r.Method, "Expected method 'DELETE', got %s", r.Method)
-		w.WriteHeader(http.StatusNoContent)
+	mux.HandleFunc(getGlobalRoleDetailsPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
+		fmt.Fprintf(w, "not json")
 	})
 
-	deleteRoleResponse, err := client.DeleteRole(testRoleId)
+	_, err := client.GetGlobalRoleDetails(testRoleId)
 
-	if assert.NoError(t, err) {
-		assert.Equal(t, deleteRoleResponse, http.StatusNoContent)
-	}
-}
-
-func TestAims_CreateRole(t *testing.T) {
-	setup()
-	defer teardown()
-
-	const response = `
-	{
-		"id": "F578CCE5-9574-4489-BF05-A04075838DE3",
-		"account_id": "12345678",
-		"name": "Read Only",
-		"permissions": {
-			"*:own:list:*": "allowed",
-			"*:own:get:*": "allowed",
-			"*:own:*:*": "allowed"
-		},
-		"legacy_permissions": [
-			"PERM1",
-			"PERM2"
-		],
-		"version": 1,
-		"global": false,
-		"created": {
-			"at": 1430184599,
-			"by": "System"
-		},
-		"modified": {
-			"at": 1430184599,
-			"by": "System"
-		}
-		
-	}`
-
-	mux.HandleFunc(createRolePath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
-
-		w.Header().Set("content-type", "application/json")
-		fmt.Fprint(w, response)
-	})
-
-	want := Role{
-		ID:                testRoleId,
-		AccountID:         testAccountId,
-		Name:              "Read Only",
-		Permissions:       map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed},
-		LegacyPermissions: []string{"PERM1", "PERM2"},
-		Version:           1,
-		Global:            false,
-		Created:           ModifiedCreated{At: 1430184599, By: "System"},
-		Modified:          ModifiedCreated{At: 1430184599, By: "System"},
-	}
-
-	role, err := client.CreateRole(CreateRoleRequest{Name: "Read Only", Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}})
-
-	if assert.NoError(t, err) {
-		assert.Equal(t, role, want)
-	}
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), testUnmarshalError)
 }
