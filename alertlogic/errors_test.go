@@ -178,6 +178,18 @@ var tests = []RequestError{
 			true,
 		},
 	},
+	{
+		Group:        "users",
+		Path:         getUserDetailsPath,
+		Method:       "GET",
+		FunctionName: "GetUserDetails",
+		Arguments: []interface{}{
+			testUserId,
+			true,
+			true,
+			true,
+		},
+	},
 }
 
 func Test_MakeRequestError(t *testing.T) {
