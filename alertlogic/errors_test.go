@@ -119,6 +119,18 @@ var tests = []RequestError{
 			"oneTimePassword": false,
 		},
 	},
+	{
+		Group:        "users",
+		Path:         listUsersByEmailPath,
+		Method:       "GET",
+		FunctionName: "ListUsersByEmail",
+		Arguments: map[string]interface{}{
+			"email":                  testEmail,
+			"includeAccessKeys":      true,
+			"includeUserCredentials": true,
+			"includeRoleIds":         true,
+		},
+	},
 }
 
 func Test_MakeRequestError(t *testing.T) {

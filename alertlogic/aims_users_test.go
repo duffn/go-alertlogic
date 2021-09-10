@@ -389,36 +389,6 @@ func TestAims_ListUsersByEmailWithNoParams(t *testing.T) {
 	}
 }
 
-func TestAims_ListUsersByEmailMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listUsersByEmailPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.ListUsersByEmail(testEmail, true, true, true)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_ListUsersByEmailUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listUsersByEmailPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.ListUsersByEmail(testEmail, true, true, true)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_GetUserDetailsById(t *testing.T) {
 	setup()
 	defer teardown()
