@@ -76,25 +76,6 @@ var tests = []RequestError{
 		},
 	},
 	{
-		Group:        "roles",
-		Path:         updateRolePath,
-		Method:       "POST",
-		FunctionName: "UpdateRoleDetails",
-		Arguments: map[string]interface{}{
-			"roleId": testRoleId,
-			"role":   UpdateRoleRequest{Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}},
-		},
-	},
-	{
-		Group:        "roles",
-		Path:         createRolePath,
-		Method:       "POST",
-		FunctionName: "CreateRole",
-		Arguments: map[string]interface{}{
-			"role": CreateRoleRequest{Name: "Read Only", Permissions: map[string]Permission{"*:own:list:*": Allowed, "*:own:get:*": Allowed, "*:own:*:*": Allowed}},
-		},
-	},
-	{
 		Group:        "user_roles",
 		Path:         getAssignedRolesPath,
 		Method:       "GET",
