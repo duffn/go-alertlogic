@@ -102,6 +102,23 @@ var tests = []RequestError{
 			"userId": testUserId,
 		},
 	},
+	{
+		Group:        "users",
+		Path:         authenticatePath,
+		Method:       "POST",
+		FunctionName: "Authenticate",
+		Arguments:    nil,
+	},
+	{
+		Group:        "users",
+		Path:         authenticatePath,
+		Method:       "POST",
+		FunctionName: "CreateUser",
+		Arguments: map[string]interface{}{
+			"user":            CreateUserRequest{Email: testEmail, Name: "Bob Loblaw"},
+			"oneTimePassword": false,
+		},
+	},
 }
 
 func Test_MakeRequestError(t *testing.T) {
