@@ -18,6 +18,8 @@ const (
 	aimsServicePath = "aims/v1"
 	// assetsQueryServicePath is the path for the assets query service.
 	assetsQueryServicePath = "assets_query/v1"
+	// assetsWriteServicePath is the path for the assets write service.
+	assetsWriteServicePath = "assets_write/v1"
 	// deploymentServicePath is the path for the deployment service.
 	deploymentServicePath = "deployments/v1"
 )
