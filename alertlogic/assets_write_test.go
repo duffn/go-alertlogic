@@ -30,6 +30,26 @@ func TestAssetsWrite_CreateExternalDNSNameAsset(t *testing.T) {
 	}
 }
 
+func TestAssetsWrite_CreateExternalDNSNameAssetError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	errorResponse := `{"error": "Invalid operation"}`
+
+	mux.HandleFunc(modifyExternalDNSNameAssetPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method, "Expected method 'PUT', got %s", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, errorResponse)
+	})
+
+	respCode, err := client.CreateExternalDNSNameAsset(testDeploymentId, "qwert-9876.elb.us-east-1.amazonaws.com")
+
+	assert.Error(t, err)
+	assert.Equal(t, respCode, http.StatusBadRequest)
+	assert.Equal(t, err.Error(), fmt.Sprintf("error from makeRequest: %s", errorResponse))
+}
+
 func TestAssetsWrite_UpdateExternalDNSNameAsset(t *testing.T) {
 	setup()
 	defer teardown()
@@ -48,6 +68,26 @@ func TestAssetsWrite_UpdateExternalDNSNameAsset(t *testing.T) {
 	}
 }
 
+func TestAssetsWrite_UpdateExternalDNSNameAssetError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	errorResponse := `{"error": "Invalid operation"}`
+
+	mux.HandleFunc(modifyExternalDNSNameAssetPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method, "Expected method 'PUT', got %s", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, errorResponse)
+	})
+
+	respCode, err := client.UpdateExternalDNSNameAsset(testDeploymentId, "qwert-9876.elb.us-east-1.amazonaws.com", "abcd-1234.elb.us-east-1.amazonaws.com")
+
+	assert.Error(t, err)
+	assert.Equal(t, respCode, http.StatusBadRequest)
+	assert.Equal(t, err.Error(), fmt.Sprintf("error from makeRequest: %s", errorResponse))
+}
+
 func TestAssetsWrite_RemoveExternalDNSNameAsset(t *testing.T) {
 	setup()
 	defer teardown()
@@ -64,4 +104,24 @@ func TestAssetsWrite_RemoveExternalDNSNameAsset(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, assetResponse, http.StatusNoContent)
 	}
+}
+
+func TestAssetsWrite_RemoveExternalDNSNameAssetError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	errorResponse := `{"error": "Invalid operation"}`
+
+	mux.HandleFunc(modifyExternalDNSNameAssetPath, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method, "Expected method 'PUT', got %s", r.Method)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprint(w, errorResponse)
+	})
+
+	respCode, err := client.RemoveExternalDNSNameAsset(testDeploymentId, "qwert-9876.elb.us-east-1.amazonaws.com")
+
+	assert.Error(t, err)
+	assert.Equal(t, respCode, http.StatusBadRequest)
+	assert.Equal(t, err.Error(), fmt.Sprintf("error from makeRequest: %s", errorResponse))
 }
