@@ -60,35 +60,6 @@ func TestAims_GetAccountDetails(t *testing.T) {
 	}
 }
 
-func TestAims_GetAccountDetailsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetAccountDetails()
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetAccountDetailsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetAccountDetails()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_GetAccountRelationship(t *testing.T) {
 	setup()
 	defer teardown()
@@ -167,33 +138,4 @@ func TestAims_UpdateAccountDetails(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, user, want)
 	}
-}
-
-func TestAims_UpdateAccountDetailsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.UpdateAccountDetails(UpdateAccountDetailsRequest{MfaRequired: false})
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_UpdateAccountDetailsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(accountDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "POST", r.Method, "Expected method 'POST', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.UpdateAccountDetails(UpdateAccountDetailsRequest{MfaRequired: false})
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }

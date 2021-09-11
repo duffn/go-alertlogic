@@ -316,35 +316,6 @@ func TestDeployments_ListDeployments(t *testing.T) {
 	}
 }
 
-func TestDeployments_ListDeploymentsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listDeploymentsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.ListDeployments()
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestDeployments_ListDeploymentsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listDeploymentsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.ListDeployments()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestDeployments_GetDeployment(t *testing.T) {
 	setup()
 	defer teardown()
@@ -509,33 +480,4 @@ func TestDeployments_GetDeployment(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, deployment, want)
 	}
-}
-
-func TestDeployments_GetDeploymentMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getDeploymentPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetDeployment(testDeploymentId)
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestDeployments_GetDeploymentUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getDeploymentPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetDeployment(testDeploymentId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }

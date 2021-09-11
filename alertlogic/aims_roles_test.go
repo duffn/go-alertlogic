@@ -107,36 +107,6 @@ func TestAims_ListRoles(t *testing.T) {
 	}
 }
 
-func TestAims_ListRolesMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listRolesPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.ListRoles()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_ListRolesUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listRolesPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.ListRoles()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_ListGlobalRoles(t *testing.T) {
 	setup()
 	defer teardown()
@@ -229,36 +199,6 @@ func TestAims_ListGlobalRoles(t *testing.T) {
 	}
 }
 
-func TestAims_ListGlobalRolesMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listGlobalRolesPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.ListGlobalRoles()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_ListGlobalRolesUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(listGlobalRolesPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.ListGlobalRoles()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_GetRoleDetails(t *testing.T) {
 	setup()
 	defer teardown()
@@ -315,36 +255,6 @@ func TestAims_GetRoleDetails(t *testing.T) {
 	}
 }
 
-func TestAims_GetRoleDetailsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getRoleDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetRoleDetails(testRoleId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetRoleDetailsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getRoleDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetRoleDetails(testRoleId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_GetGlobalRoleDetails(t *testing.T) {
 	setup()
 	defer teardown()
@@ -399,34 +309,4 @@ func TestAims_GetGlobalRoleDetails(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, roles, want)
 	}
-}
-
-func TestAims_GetGlobalRoleDetailsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getGlobalRoleDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetGlobalRoleDetails(testRoleId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetGlobalRoleDetailsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getGlobalRoleDetailsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetGlobalRoleDetails(testRoleId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }
