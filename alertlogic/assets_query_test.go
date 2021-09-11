@@ -152,32 +152,3 @@ func TestAssetsQuery_GetExternalDNSNameAssets(t *testing.T) {
 		assert.Equal(t, assets, want)
 	}
 }
-
-func TestAssetsQuery_GetExternalDNSNameAssetsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getExternalDNSNameAssetsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetExternalDNSNameAssets()
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAssetsQuery_GetExternalDNSNameAssetsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getExternalDNSNameAssetsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetExternalDNSNameAssets()
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}

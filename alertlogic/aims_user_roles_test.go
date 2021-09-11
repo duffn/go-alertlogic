@@ -108,36 +108,6 @@ func TestAims_GetAssignedRoles(t *testing.T) {
 	}
 }
 
-func TestAims_GetAssignedRolesMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getAssignedRolesPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetAssignedRoles(testUserId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetAssignedRolesUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getAssignedRolesPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetAssignedRoles(testUserId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
-}
-
 func TestAims_GetAssignedRoleIDs(t *testing.T) {
 	setup()
 	defer teardown()
@@ -158,36 +128,6 @@ func TestAims_GetAssignedRoleIDs(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, roleIds, want)
 	}
-}
-
-func TestAims_GetAssignedRoleIDsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getAssignedRoleIDsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetAssignedRoleIDs(testUserId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetAssignedRoleIDsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getAssignedRoleIDsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetAssignedRoleIDs(testUserId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }
 
 func TestAims_GetUserPermissions(t *testing.T) {
@@ -223,36 +163,6 @@ func TestAims_GetUserPermissions(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, perms, want)
 	}
-}
-
-func TestAims_GetUserPermissionsMakeRequestError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getUserPermissionsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		w.WriteHeader(http.StatusUnauthorized)
-	})
-
-	_, err := client.GetUserPermissions(testUserId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "error from makeRequest: HTTP status 401: invalid credentials")
-}
-
-func TestAims_GetUserPermissionsUnmarshalError(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc(getUserPermissionsPath, func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "GET", r.Method, "Expected method 'GET', got %s", r.Method)
-		fmt.Fprintf(w, "not json")
-	})
-
-	_, err := client.GetUserPermissions(testUserId)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), testUnmarshalError)
 }
 
 func TestAims_RevokeUserRole(t *testing.T) {
