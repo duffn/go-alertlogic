@@ -190,6 +190,29 @@ var tests = []RequestError{
 			true,
 		},
 	},
+	{
+		Group:        "assets_query",
+		Path:         getExternalDNSNameAssetsPath,
+		Method:       "GET",
+		FunctionName: "GetExternalDNSNameAssets",
+		Arguments:    nil,
+	},
+	{
+		Group:        "deployments",
+		Path:         listDeploymentsPath,
+		Method:       "GET",
+		FunctionName: "ListDeployments",
+		Arguments:    nil,
+	},
+	{
+		Group:        "deployments",
+		Path:         getDeploymentPath,
+		Method:       "GET",
+		FunctionName: "GetDeployment",
+		Arguments: []interface{}{
+			testDeploymentId,
+		},
+	},
 }
 
 func Test_MakeRequestError(t *testing.T) {
